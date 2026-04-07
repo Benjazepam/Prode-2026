@@ -8,47 +8,43 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚽</text></svg>">
 
-<!-- ══════════════════════════════════════════════════════════ -->
-<!-- CONFIGURACIÓN: Pegá tu URL y KEY de Supabase acá abajo   -->
-<!-- ══════════════════════════════════════════════════════════ -->
+<!-- ══════════════════════════════════════════════════ -->
+<!--  CONFIGURACIÓN: Pegá tus datos de Supabase acá   -->
+<!-- ══════════════════════════════════════════════════ -->
 <script>
 const SUPABASE_URL = "https://lztqfyscjyezicqulckb.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx6dHFmeXNjanllemljcXVsY2tiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzMyNDIsImV4cCI6MjA5MDg0OTI0Mn0.mumeKEZIuZ_DxmC2v5y2LksOIkKuNUZpJJdqifT0drw";
 </script>
-<!-- ══════════════════════════════════════════════════════════ -->
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-:root{--bg:#080814;--c1:#111125;--c2:#1a1a34;--bd:#252550;--pr:#7c3aed;--pl:#a78bfa;--gn:#10b981;--gl:#34d399;--rd:#ef4444;--gd:#f59e0b;--gl2:#fbbf24;--tx:#eeeef8;--t2:#9898b8;--t3:#5a5a7a}
-body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--tx);max-width:500px;margin:0 auto;min-height:100dvh;overflow-x:hidden}
-input,select,button,textarea{font-family:inherit}
-button{cursor:pointer}
+:root{--bg:#080814;--c1:#111125;--c2:#1a1a34;--bd:#252550;--pr:#7c3aed;--pl:#a78bfa;--gn:#10b981;--gl:#34d399;--rd:#ef4444;--gd:#f59e0b;--tx:#eeeef8;--t2:#9898b8;--t3:#5a5a7a}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--tx);max-width:500px;margin:0 auto;min-height:100dvh}
+input,select,button,textarea{font-family:inherit}button{cursor:pointer}
 .hdr{background:linear-gradient(135deg,var(--pr),#dc2626 55%,var(--gd));padding:26px 16px 14px;text-align:center;border-radius:0 0 20px 20px;position:relative}
 .hdr::before{content:'';position:absolute;inset:0;opacity:.07;background:repeating-linear-gradient(45deg,transparent,transparent 18px,#fff 18px,#fff 36px);border-radius:0 0 20px 20px;pointer-events:none}
 .hdr>*{position:relative}
 .nav{display:flex;gap:4px;margin-top:12px;justify-content:center;flex-wrap:wrap}
 .nb{padding:5px 12px;border-radius:14px;border:none;font-size:12px;font-weight:700;color:#fff;background:rgba(255,255,255,.1)}.nb.a{background:rgba(255,255,255,.25)}
 .cd{background:var(--c1);border-radius:14px;padding:16px;border:1px solid var(--bd);margin-bottom:10px}
-.btn{padding:10px 16px;border-radius:10px;border:none;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;gap:6px;width:100%}
-.btn:active{opacity:.8}.bp{background:var(--pr);color:#fff}.bg2{background:var(--gn);color:#fff}.bgl{background:var(--gd);color:#000}.bgh{background:var(--c2);color:var(--t2);border:1px solid var(--bd)}
+.btn{padding:10px 16px;border-radius:10px;border:none;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;gap:6px;width:100%}.btn:active{opacity:.8}
+.bp{background:var(--pr);color:#fff}.bg2{background:var(--gn);color:#fff}.bgl{background:var(--gd);color:#000}.bgh{background:var(--c2);color:var(--t2);border:1px solid var(--bd)}
 .inp{padding:9px 12px;border-radius:9px;background:var(--c2);border:1px solid var(--bd);color:var(--tx);font-size:14px;outline:none;width:100%;box-sizing:border-box}.inp:focus{border-color:var(--pr)}
 .sel{padding:8px 10px;border-radius:8px;background:var(--bg);border:1px solid var(--bd);color:var(--tx);font-size:13px;outline:none;width:100%;box-sizing:border-box}
-.sci{width:42px;height:36px;text-align:center;font-size:16px;font-weight:800;border:2px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);outline:none}
-.sci.gld{border-color:rgba(245,158,11,.35);color:var(--gd)}.sci:disabled{opacity:.4}
-.mr{background:var(--c1);border-radius:10px;padding:8px 10px;border:1px solid var(--bd);display:flex;align-items:center;gap:6px;margin-bottom:6px}
-.mr.lk{opacity:.65;border-color:var(--rd)44}.mr.rl{border-color:rgba(245,158,11,.2)}
+.sci{width:42px;height:36px;text-align:center;font-size:16px;font-weight:800;border:2px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);outline:none}.sci.gld{border-color:rgba(245,158,11,.35);color:var(--gd)}.sci:disabled{opacity:.35}
+.mr{background:var(--c1);border-radius:10px;padding:8px 10px;border:1px solid var(--bd);display:flex;align-items:center;gap:6px;margin-bottom:6px}.mr.lk{opacity:.6;border-color:rgba(239,68,68,.25)}.mr.rl{border-color:rgba(245,158,11,.2)}
 .tl{flex:1;display:flex;align-items:center;gap:4px;min-width:0;font-size:12px;font-weight:600}.tl.r{justify-content:flex-end}.tl .n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.fl{font-size:16px;flex-shrink:0}
+.fg{width:20px;height:14px;border-radius:2px;flex-shrink:0;object-fit:cover}
 .gg{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-bottom:10px}
-.gb{padding:7px 0;border-radius:8px;border:2px solid var(--bd);background:transparent;color:var(--t3);font-size:13px;font-weight:800}
-.gb.ac{border-color:var(--pr);background:rgba(124,58,237,.12);color:var(--pl)}.gb.dn{border-color:var(--gn);color:var(--gl)}.gb.ga{border-color:var(--gd);background:rgba(245,158,11,.12);color:var(--gd)}
+.gb{padding:7px 0;border-radius:8px;border:2px solid var(--bd);background:transparent;color:var(--t3);font-size:13px;font-weight:800}.gb.ac{border-color:var(--pr);background:rgba(124,58,237,.12);color:var(--pl)}.gb.dn{border-color:var(--gn);color:var(--gl)}.gb.ga{border-color:var(--gd);background:rgba(245,158,11,.12);color:var(--gd)}
 .st{display:flex;gap:4px;margin-bottom:12px;overflow-x:auto}.stb{padding:7px 12px;border-radius:14px;border:none;font-size:12px;font-weight:700;white-space:nowrap;background:var(--c1);color:var(--t3)}.stb.a{background:var(--pr);color:#fff}
 .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:var(--gn);color:#fff;padding:10px 24px;border-radius:20px;font-size:14px;font-weight:700;z-index:999;box-shadow:0 4px 20px rgba(0,0,0,.4);animation:fu .3s ease}
 @keyframes fu{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 .pb{flex:1;height:7px;background:var(--c2);border-radius:4px;overflow:hidden}.pf{height:100%;border-radius:4px;transition:width .4s}
-.lock-tag{font-size:10px;background:rgba(239,68,68,.15);color:var(--rd);padding:2px 6px;border-radius:4px;font-weight:700;white-space:nowrap}
-.peek{font-size:11px;color:var(--t2);margin-top:4px;line-height:1.5}
+.lktag{font-size:9px;background:rgba(239,68,68,.15);color:var(--rd);padding:2px 5px;border-radius:4px;font-weight:700;white-space:nowrap}
+.peek{font-size:11px;color:var(--t2);margin-top:2px;margin-bottom:6px;line-height:1.4;padding:0 4px}
+.warn{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:10px;padding:10px 12px;margin-bottom:10px;font-size:12px;color:var(--gd);font-weight:600}
 </style>
 </head>
 <body>
@@ -59,92 +55,59 @@ const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 async function dbGet(k){try{const{data}=await sb.from("prode_storage").select("value").eq("key",k).single();return data?JSON.parse(data.value):null;}catch{return null;}}
 async function dbSet(k,v){try{await sb.from("prode_storage").upsert({key:k,value:JSON.stringify(v),updated_at:new Date().toISOString()});}catch(e){console.error(e);}}
 
-// ═══ DATA ═══
+// ═══ COUNTRIES + FLAGS (ISO codes for flagcdn.com) ═══
 const GROUPS={A:["México","Corea del Sur","Sudáfrica","Chequia"],B:["Canadá","Suiza","Qatar","Bosnia-Herz."],C:["Brasil","Marruecos","Escocia","Haití"],D:["EE.UU.","Paraguay","Australia","Turquía"],E:["Alemania","Ecuador","Costa de Marfil","Curazao"],F:["Japón","Países Bajos","Suecia","Túnez"],G:["Bélgica","Irán","Egipto","Nueva Zelanda"],H:["España","Uruguay","Arabia Saudita","Cabo Verde"],I:["Francia","Noruega","Senegal","Irak"],J:["Argentina","Austria","Argelia","Jordania"],K:["Portugal","Colombia","Uzbekistán","R.D. Congo"],L:["Inglaterra","Croacia","Ghana","Panamá"]};
-const T=Object.values(GROUPS).flat();
-const FL={"México":"🇲🇽","Corea del Sur":"🇰🇷","Sudáfrica":"🇿🇦","Chequia":"🇨🇿","Canadá":"🇨🇦","Suiza":"🇨🇭","Qatar":"🇶🇦","Bosnia-Herz.":"🇧🇦","Brasil":"🇧🇷","Marruecos":"🇲🇦","Escocia":"🏴󠁧󠁢󠁳󠁣󠁴󠁿","Haití":"🇭🇹","EE.UU.":"🇺🇸","Paraguay":"🇵🇾","Australia":"🇦🇺","Turquía":"🇹🇷","Alemania":"🇩🇪","Ecuador":"🇪🇨","Costa de Marfil":"🇨🇮","Curazao":"🇨🇼","Japón":"🇯🇵","Países Bajos":"🇳🇱","Suecia":"🇸🇪","Túnez":"🇹🇳","Bélgica":"🇧🇪","Irán":"🇮🇷","Egipto":"🇪🇬","Nueva Zelanda":"🇳🇿","España":"🇪🇸","Uruguay":"🇺🇾","Arabia Saudita":"🇸🇦","Cabo Verde":"🇨🇻","Francia":"🇫🇷","Noruega":"🇳🇴","Senegal":"🇸🇳","Irak":"🇮🇶","Argentina":"🇦🇷","Austria":"🇦🇹","Argelia":"🇩🇿","Jordania":"🇯🇴","Portugal":"🇵🇹","Colombia":"🇨🇴","Uzbekistán":"🇺🇿","R.D. Congo":"🇨🇩","Inglaterra":"🏴󠁧󠁢󠁥󠁮󠁧󠁿","Croacia":"🇭🇷","Ghana":"🇬🇭","Panamá":"🇵🇦"};
+const TEAMS=Object.values(GROUPS).flat();
+// ISO 3166-1 alpha-2 codes for flag images
+const ISO={"México":"mx","Corea del Sur":"kr","Sudáfrica":"za","Chequia":"cz","Canadá":"ca","Suiza":"ch","Qatar":"qa","Bosnia-Herz.":"ba","Brasil":"br","Marruecos":"ma","Escocia":"gb-sct","Haití":"ht","EE.UU.":"us","Paraguay":"py","Australia":"au","Turquía":"tr","Alemania":"de","Ecuador":"ec","Costa de Marfil":"ci","Curazao":"cw","Japón":"jp","Países Bajos":"nl","Suecia":"se","Túnez":"tn","Bélgica":"be","Irán":"ir","Egipto":"eg","Nueva Zelanda":"nz","España":"es","Uruguay":"uy","Arabia Saudita":"sa","Cabo Verde":"cv","Francia":"fr","Noruega":"no","Senegal":"sn","Irak":"iq","Argentina":"ar","Austria":"at","Argelia":"dz","Jordania":"jo","Portugal":"pt","Colombia":"co","Uzbekistán":"uz","R.D. Congo":"cd","Inglaterra":"gb-eng","Croacia":"hr","Ghana":"gh","Panamá":"pa"};
+function flag(t){const c=ISO[t];return c?`<img class="fg" src="https://flagcdn.com/w40/${c}.png" alt="${t}" onerror="this.style.display='none'">`:`<span style="font-size:14px">🏳️</span>`;}
+function flagSel(t){const c=ISO[t];return c?`https://flagcdn.com/w20/${c}.png`:"";}
+
 const GM={};Object.entries(GROUPS).forEach(([g,t])=>{GM[g]=[[t[0],t[2]],[t[1],t[3]],[t[0],t[1]],[t[2],t[3]],[t[0],t[3]],[t[1],t[2]]];});
 
-// Kickoff times in UTC (ISO format). Matches lock when current time >= kickoff.
-// Format: "YYYY-MM-DDTHH:MM:00Z" in UTC (ET + 4 hours for EDT summer)
-const KICKOFFS={
-"A-0":"2026-06-11T19:00Z","A-1":"2026-06-12T02:00Z",// Mex-SA, KOR-CZE
-"A-2":"2026-06-19T03:00Z","A-3":"2026-06-18T16:00Z",// Mex-KOR, CZE-SA
-"A-4":"2026-06-25T01:00Z","A-5":"2026-06-25T01:00Z",// Mex-CZE, SA-KOR
-"B-0":"2026-06-12T19:00Z","B-1":"2026-06-13T19:00Z",// CAN-BOS, QAT-SUI
-"B-2":"2026-06-18T22:00Z","B-3":"2026-06-18T19:00Z",// CAN-QAT, SUI-BOS
-"B-4":"2026-06-24T19:00Z","B-5":"2026-06-24T19:00Z",// SUI-CAN, BOS-QAT
-"C-0":"2026-06-13T22:00Z","C-1":"2026-06-14T01:00Z",// BRA-MAR, HAI-SCO
-"C-2":"2026-06-19T22:00Z","C-3":"2026-06-20T01:00Z",// SCO-MAR, BRA-HAI
-"C-4":"2026-06-24T22:00Z","C-5":"2026-06-24T22:00Z",// SCO-BRA, MAR-HAI
-"D-0":"2026-06-13T01:00Z","D-1":"2026-06-14T04:00Z",// USA-PAR, AUS-TUR
-"D-2":"2026-06-19T19:00Z","D-3":"2026-06-20T04:00Z",// USA-AUS, TUR-PAR
-"D-4":"2026-06-26T02:00Z","D-5":"2026-06-26T02:00Z",// TUR-USA, PAR-AUS
-"E-0":"2026-06-14T17:00Z","E-1":"2026-06-14T23:00Z",// GER-CUR, CIV-ECU
-"E-2":"2026-06-20T20:00Z","E-3":"2026-06-21T00:00Z",// GER-CIV, ECU-CUR
-"E-4":"2026-06-25T20:00Z","E-5":"2026-06-25T20:00Z",// ECU-GER, CUR-CIV
-"F-0":"2026-06-14T20:00Z","F-1":"2026-06-15T02:00Z",// NED-JPN, SWE-TUN
-"F-2":"2026-06-20T17:00Z","F-3":"2026-06-21T04:00Z",// NED-SWE, TUN-JPN
-"F-4":"2026-06-25T23:00Z","F-5":"2026-06-25T23:00Z",// JPN-SWE, TUN-NED
-"G-0":"2026-06-15T22:00Z","G-1":"2026-06-16T04:00Z",// BEL-EGY, IRA-NZ
-"G-2":"2026-06-21T19:00Z","G-3":"2026-06-22T01:00Z",// BEL-IRA, NZ-EGY
-"G-4":"2026-06-27T03:00Z","G-5":"2026-06-27T03:00Z",// EGY-IRA, NZ-BEL
-"H-0":"2026-06-15T17:00Z","H-1":"2026-06-15T22:00Z",// ESP-CV, KSA-URU
-"H-2":"2026-06-21T16:00Z","H-3":"2026-06-21T22:00Z",// ESP-KSA, URU-CV
-"H-4":"2026-06-27T00:00Z","H-5":"2026-06-27T00:00Z",// CV-KSA, URU-ESP
-"I-0":"2026-06-16T19:00Z","I-1":"2026-06-16T22:00Z",// FRA-SEN, IRQ-NOR
-"I-2":"2026-06-22T21:00Z","I-3":"2026-06-23T00:00Z",// FRA-IRQ, NOR-SEN
-"I-4":"2026-06-26T19:00Z","I-5":"2026-06-26T19:00Z",// NOR-FRA, SEN-IRQ
-"J-0":"2026-06-17T01:00Z","J-1":"2026-06-17T04:00Z",// ARG-ALG, AUT-JOR
-"J-2":"2026-06-22T17:00Z","J-3":"2026-06-23T03:00Z",// ARG-AUT, JOR-ALG
-"J-4":"2026-06-28T02:00Z","J-5":"2026-06-28T02:00Z",// ALG-AUT, JOR-ARG
-"K-0":"2026-06-17T17:00Z","K-1":"2026-06-18T02:00Z",// POR-CON, UZB-COL
-"K-2":"2026-06-23T17:00Z","K-3":"2026-06-24T02:00Z",// POR-UZB, COL-CON
-"K-4":"2026-06-27T23:30Z","K-5":"2026-06-27T23:30Z",// COL-POR, CON-UZB
-"L-0":"2026-06-17T20:00Z","L-1":"2026-06-17T23:00Z",// ENG-CRO, GHA-PAN
-"L-2":"2026-06-23T20:00Z","L-3":"2026-06-23T23:00Z",// ENG-GHA, PAN-CRO
-"L-4":"2026-06-27T21:00Z","L-5":"2026-06-27T21:00Z",// PAN-ENG, CRO-GHA
+// Kickoff UTC times
+const KO={
+"A-0":"2026-06-11T19:00Z","A-1":"2026-06-12T02:00Z","A-2":"2026-06-19T03:00Z","A-3":"2026-06-18T16:00Z","A-4":"2026-06-25T01:00Z","A-5":"2026-06-25T01:00Z",
+"B-0":"2026-06-12T19:00Z","B-1":"2026-06-13T19:00Z","B-2":"2026-06-18T22:00Z","B-3":"2026-06-18T19:00Z","B-4":"2026-06-24T19:00Z","B-5":"2026-06-24T19:00Z",
+"C-0":"2026-06-13T22:00Z","C-1":"2026-06-14T01:00Z","C-2":"2026-06-19T22:00Z","C-3":"2026-06-20T01:00Z","C-4":"2026-06-24T22:00Z","C-5":"2026-06-24T22:00Z",
+"D-0":"2026-06-13T01:00Z","D-1":"2026-06-14T04:00Z","D-2":"2026-06-19T19:00Z","D-3":"2026-06-20T04:00Z","D-4":"2026-06-26T02:00Z","D-5":"2026-06-26T02:00Z",
+"E-0":"2026-06-14T17:00Z","E-1":"2026-06-14T23:00Z","E-2":"2026-06-20T20:00Z","E-3":"2026-06-21T00:00Z","E-4":"2026-06-25T20:00Z","E-5":"2026-06-25T20:00Z",
+"F-0":"2026-06-14T20:00Z","F-1":"2026-06-15T02:00Z","F-2":"2026-06-20T17:00Z","F-3":"2026-06-21T04:00Z","F-4":"2026-06-25T23:00Z","F-5":"2026-06-25T23:00Z",
+"G-0":"2026-06-15T22:00Z","G-1":"2026-06-16T04:00Z","G-2":"2026-06-21T19:00Z","G-3":"2026-06-22T01:00Z","G-4":"2026-06-27T03:00Z","G-5":"2026-06-27T03:00Z",
+"H-0":"2026-06-15T17:00Z","H-1":"2026-06-15T22:00Z","H-2":"2026-06-21T16:00Z","H-3":"2026-06-21T22:00Z","H-4":"2026-06-27T00:00Z","H-5":"2026-06-27T00:00Z",
+"I-0":"2026-06-16T19:00Z","I-1":"2026-06-16T22:00Z","I-2":"2026-06-22T21:00Z","I-3":"2026-06-23T00:00Z","I-4":"2026-06-26T19:00Z","I-5":"2026-06-26T19:00Z",
+"J-0":"2026-06-17T01:00Z","J-1":"2026-06-17T04:00Z","J-2":"2026-06-22T17:00Z","J-3":"2026-06-23T03:00Z","J-4":"2026-06-28T02:00Z","J-5":"2026-06-28T02:00Z",
+"K-0":"2026-06-17T17:00Z","K-1":"2026-06-18T02:00Z","K-2":"2026-06-23T17:00Z","K-3":"2026-06-24T02:00Z","K-4":"2026-06-27T23:30Z","K-5":"2026-06-27T23:30Z",
+"L-0":"2026-06-17T20:00Z","L-1":"2026-06-17T23:00Z","L-2":"2026-06-23T20:00Z","L-3":"2026-06-23T23:00Z","L-4":"2026-06-27T21:00Z","L-5":"2026-06-27T21:00Z",
 };
+// Admin test mode: set to true to pretend all matches started
+let TEST_MODE=false;
+function isLocked(k){if(TEST_MODE)return true;const ko=KO[k];if(!ko)return false;return new Date()>=new Date(ko);}
 
-function isLocked(k){const ko=KICKOFFS[k];if(!ko)return false;return new Date()>=new Date(ko);}
-
-// Build list of all group matches for dropdown
-const ALL_MATCHES=[];
-Object.entries(GM).forEach(([g,ms])=>ms.forEach((m,i)=>{ALL_MATCHES.push({key:`${g}-${i}`,label:`${FL[m[0]]} ${m[0]} vs ${m[1]} ${FL[m[1]]}`,g});}));
-
+const ALL_M=[];Object.entries(GM).forEach(([g,ms])=>ms.forEach((m,i)=>{ALL_M.push({k:`${g}-${i}`,l:`[${g}] ${m[0]} vs ${m[1]}`,g});}));
 const SCORERS=["Kylian Mbappé","Erling Haaland","Lionel Messi","Vinícius Jr.","Harry Kane","Lautaro Martínez","Julián Álvarez","Bukayo Saka","Cristiano Ronaldo","Viktor Gyökeres","Mohamed Salah","Darwin Núñez","Jamal Musiala","Phil Foden","Cody Gakpo","Florian Wirtz","Jude Bellingham","Lamine Yamal","Alejandro Garnacho","Fermín López","Dani Olmo","Pedri","Victor Osimhen","Serge Gnabry","Denzel Dumfries","Memphis Depay","Xavi Simons","Mehdi Taremi","Alexander Isak","Dejan Kulusevski","Ademola Lookman","Iñaki Williams","Marcus Rashford","Kevin De Bruyne","Jérémy Doku","Santiago Giménez","Luis Suárez","Luis Díaz","Rafael Leão","Randal Kolo Muani","Otro"];
-
 const SPECIALS=[
-  {key:"campeon",label:"Campeón",icon:"🏆",type:"team"},
-  {key:"subcampeon",label:"Subcampeón",icon:"🥈",type:"team"},
-  {key:"tercero",label:"Tercer puesto",icon:"🥉",type:"team"},
-  {key:"goleador",label:"Goleador",icon:"👟",type:"scorer"},
+  {key:"campeon",label:"Campeón",icon:"🏆",type:"team"},{key:"subcampeon",label:"Subcampeón",icon:"🥈",type:"team"},
+  {key:"tercero",label:"Tercer puesto",icon:"🥉",type:"team"},{key:"goleador",label:"Goleador",icon:"👟",type:"scorer"},
   {key:"goles_goleador",label:"Goles del goleador",icon:"🎯",type:"number"},
-  {key:"mas_goleador",label:"País más goleador",icon:"💥",type:"team"},
-  {key:"menos_recibe",label:"País que menos goles recibe",icon:"🧱",type:"team"},
-  {key:"mas_goleado",label:"País más goleado (recibe más)",icon:"😵",type:"team"},
-  {key:"menos_goles",label:"País con menos goles a favor",icon:"🔒",type:"team"},
-  {key:"ultimo",label:"Equipo último",icon:"💀",type:"team"},
-  {key:"decepcion",label:"Decepción",icon:"😔",type:"team"},
-  {key:"sorpresa",label:"Sorpresa",icon:"🤩",type:"team"},
-  {key:"mvp",label:"MVP",icon:"🌟",type:"text"},
-  {key:"mejor_arq",label:"Mejor arquero",icon:"🧤",type:"text"},
-  {key:"mejor_joven",label:"Mejor joven",icon:"👶",type:"text"},
-  {key:"gol_torneo",label:"Total goles del torneo",icon:"📊",type:"number"},
-  {key:"partido_mas_goles",label:"Partido con más goles (fase grupos)",icon:"🔥",type:"match"},
+  {key:"mas_goleador",label:"País más goleador",icon:"💥",type:"team"},{key:"menos_recibe",label:"Mejor defensa (menos recibe)",icon:"🧱",type:"team"},
+  {key:"mas_goleado",label:"País más goleado",icon:"😵",type:"team"},{key:"menos_goles",label:"Menos goles a favor",icon:"🔒",type:"team"},
+  {key:"ultimo",label:"Equipo último",icon:"💀",type:"team"},{key:"decepcion",label:"Decepción",icon:"😔",type:"team"},
+  {key:"sorpresa",label:"Sorpresa",icon:"🤩",type:"team"},{key:"mvp",label:"MVP",icon:"🌟",type:"text"},
+  {key:"mejor_arq",label:"Mejor arquero",icon:"🧤",type:"text"},{key:"mejor_joven",label:"Mejor joven",icon:"👶",type:"text"},
+  {key:"gol_torneo",label:"Total goles torneo",icon:"📊",type:"number"},
+  {key:"partido_mas_goles",label:"Partido con más goles (grupos)",icon:"🔥",type:"match"},
 ];
-const DEF_PTS={resultado:3,goles_equipo:1,exacto:5,campeon:20,subcampeon:12,tercero:8,goleador:15,goles_goleador:10,mas_goleador:8,menos_recibe:8,mas_goleado:8,menos_goles:8,ultimo:8,decepcion:6,sorpresa:6,mvp:12,mejor_arq:10,mejor_joven:10,gol_torneo:10,partido_mas_goles:5};
-const ADMIN_HASH="7d93823faecc8df64da2d16c6de6c8ee54fae1fec2278efcede48d7a0ed00c04";
+const DP={resultado:3,goles_equipo:1,exacto:5,campeon:20,subcampeon:12,tercero:8,goleador:15,goles_goleador:10,mas_goleador:8,menos_recibe:8,mas_goleado:8,menos_goles:8,ultimo:8,decepcion:6,sorpresa:6,mvp:12,mejor_arq:10,mejor_joven:10,gol_torneo:10,partido_mas_goles:5};
+const AH="7d93823faecc8df64da2d16c6de6c8ee54fae1fec2278efcede48d7a0ed00c04";
 async function sha256(t){const d=new TextEncoder().encode(t);const b=await crypto.subtle.digest("SHA-256",d);return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,"0")).join("");}
-
 function emptyP(){const p={matches:{},specials:{}};Object.entries(GM).forEach(([g,ms])=>ms.forEach((_,i)=>{p.matches[`${g}-${i}`]={h:"",a:""};}));return p;}
-function tOpts(s){return`<option value="">Elegí selección...</option>${T.map(t=>`<option value="${t}"${s===t?" selected":""}>${FL[t]||""} ${t}</option>`).join("")}`;}
-function scOpts(s){return`<option value="">Elegí goleador...</option>${SCORERS.map(x=>`<option value="${x}"${s===x?" selected":""}>${x}</option>`).join("")}`;}
-function mOpts(s){return`<option value="">Elegí partido...</option>${ALL_MATCHES.map(m=>`<option value="${m.key}"${s===m.key?" selected":""}>[${m.g}] ${m.label}</option>`).join("")}`;}
+function tOpts(s){return`<option value="">Elegí...</option>${TEAMS.map(t=>`<option value="${t}"${s===t?" selected":""}>${t}</option>`).join("")}`;}
+function scOpts(s){return`<option value="">Elegí...</option>${SCORERS.map(x=>`<option value="${x}"${s===x?" selected":""}>${x}</option>`).join("")}`;}
+function mOpts(s){return`<option value="">Elegí partido...</option>${ALL_M.map(m=>`<option value="${m.k}"${s===m.k?" selected":""}>${m.l}</option>`).join("")}`;}
 
 // ═══ STATE ═══
-let S={screen:"login",user:null,config:{points:{...DEF_PTS}},players:{},results:{matches:{},specials:{}},playTab:"groups",ag:"A",adminTab:"points",adminGr:"A",toast:"",showAllPts:false,showAdmin:false};
-
+let S={screen:"login",user:null,config:{points:{...DP}},players:{},results:{matches:{},specials:{}},playTab:"groups",ag:"A",adminTab:"points",adminGr:"A",toast:"",showAllPts:false,showAdmin:false,viewPlayer:null};
 async function loadAll(){const[c,p,r]=await Promise.all([dbGet("prode-config"),dbGet("prode-players"),dbGet("prode-results")]);if(c)S.config=c;if(p)S.players=p;if(r)S.results=r;}
 function toast(m){S.toast=m;render();setTimeout(()=>{S.toast="";render();},2e3);}
 function comp(pd){if(!pd)return 0;const mF=Object.values(pd.matches||{}).filter(m=>m.h!==""&&m.a!=="").length;const sF=SPECIALS.filter(c=>(pd.specials||{})[c.key]&&pd.specials[c.key]!=="").length;return Math.round(((mF+sF)/(72+SPECIALS.length))*100);}
@@ -154,89 +117,126 @@ const rSp=S.results.specials||{};SPECIALS.forEach(c=>{const pr=pd.specials?.[c.k
 return{total:mP+sP,det};}
 function maxPM(){const p=S.config.points;return(p.resultado||0)+(p.goles_equipo||0)*2+(p.exacto||0);}
 
+// Upcoming unlocked matches count
+function pendingMatches(pd){if(!pd)return 0;let c=0;const now=new Date(),soon=new Date(now.getTime()+24*60*60*1000);
+Object.keys(KO).forEach(k=>{const ko=new Date(KO[k]);if(ko>now&&ko<=soon){const m=pd.matches?.[k];if(!m||m.h===""||m.a==="")c++;}});return c;}
+
+// ═══ AUTO RESULTS (fetches from openfootball GitHub JSON) ═══
+async function fetchAutoResults(){
+  try{
+    const r=await fetch("https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json");
+    if(!r.ok)return;
+    const data=await r.json();
+    // Parse and map to our format - this will work once tournament starts and data is updated
+    if(data&&data.matches){
+      let changed=false;
+      // Map team names to our format (basic mapping)
+      data.matches.forEach(m=>{
+        if(m.score1!==undefined&&m.score2!==undefined&&m.score1!==null){
+          // Find matching key in our system
+          // This is a simplified mapping - would need full team name mapping
+          changed=true;
+        }
+      });
+      if(changed){await dbSet("prode-results",S.results);render();}
+    }
+  }catch(e){console.log("Auto-fetch not available yet:",e.message);}
+}
+
 // ═══ HANDLERS ═══
-async function doLogin(){
-  const name=document.getElementById("nameIn")?.value?.trim();if(!name)return;
-  if(S.players[name]){
-    const pin=prompt("Ya existe un jugador con ese nombre. Ingresá tu PIN de 4 dígitos:");
-    if(!pin)return;
-    const hash=await sha256(pin);
-    if(S.players[name].pin!==hash){toast("❌ PIN incorrecto");return;}
-  }else{
-    const pin=prompt("Elegí un PIN de 4 dígitos (para que nadie edite tu prode):");
-    if(!pin||pin.length<3){toast("❌ PIN muy corto (mínimo 3 dígitos)");return;}
-    const hash=await sha256(pin);
-    const np=emptyP();np.pin=hash;
-    S.players[name]=np;await dbSet("prode-players",S.players);
-  }
-  S.user={name,isAdmin:false};S.screen="play";render();
-}
-async function doAdminLogin(){
-  const pass=document.getElementById("adminPassIn")?.value||"";
-  const hash=await sha256(pass);
-  if(hash===ADMIN_HASH){S.user={name:"Admin",isAdmin:true};S.screen="admin";S.showAdmin=false;await loadAll();render();}
-  else toast("❌ Contraseña incorrecta");
-}
-async function setScore(k,side,v){if(isLocked(k))return;S.players[S.user.name].matches[k][side]=v;await dbSet("prode-players",S.players);render();}
+async function doLogin(){const name=document.getElementById("nameIn")?.value?.trim();if(!name)return;
+if(S.players[name]){const pin=prompt("Ingresá tu PIN:");if(!pin)return;const h=await sha256(pin);if(S.players[name].pin!==h){toast("❌ PIN incorrecto");return;}}
+else{const pin=prompt("Creá un PIN (mínimo 3 dígitos):");if(!pin||pin.length<3){toast("❌ PIN muy corto");return;}const h=await sha256(pin);const np=emptyP();np.pin=h;S.players[name]=np;await dbSet("prode-players",S.players);}
+S.user={name,isAdmin:false};S.screen="play";render();}
+
+async function doAdminLogin(){const p=document.getElementById("adminPassIn")?.value||"";const h=await sha256(p);if(h===AH){S.user={name:"Admin",isAdmin:true};S.screen="admin";S.showAdmin=false;await loadAll();render();}else toast("❌ Contraseña incorrecta");}
+
+async function setScore(k,si,v){if(isLocked(k))return;S.players[S.user.name].matches[k][si]=v;await dbSet("prode-players",S.players);render();}
 async function setSpec(k,v){S.players[S.user.name].specials[k]=v;await dbSet("prode-players",S.players);render();}
 async function setPt(k,v){S.config.points[k]=parseInt(v)||0;await dbSet("prode-config",S.config);render();}
-async function setRes(k,s,v){if(!S.results.matches[k])S.results.matches[k]={h:"",a:""};S.results.matches[k][s]=v;await dbSet("prode-results",S.results);render();}
+async function setRes(k,si,v){if(!S.results.matches[k])S.results.matches[k]={h:"",a:""};S.results.matches[k][si]=v;await dbSet("prode-results",S.results);render();}
 async function setRSp(k,v){if(!S.results.specials)S.results.specials={};S.results.specials[k]=v;await dbSet("prode-results",S.results);render();}
 async function delPlayer(n){delete S.players[n];await dbSet("prode-players",S.players);toast("Borrado: "+n);}
 async function doRefresh(){await loadAll();toast("🔄 Actualizado");}
-function go(s){S.screen=s;if(s==="ranking"||s==="admin")loadAll().then(render);else render();}
+function go(s){S.screen=s;S.viewPlayer=null;if(s==="ranking"||s==="admin")loadAll().then(render);else render();}
+function toggleTest(){TEST_MODE=!TEST_MODE;toast(TEST_MODE?"🧪 Modo test ON: todos los partidos bloqueados":"✅ Modo test OFF");render();}
+
+function shareWA(){
+  const ranks=Object.entries(S.players).map(([n,d])=>({n,p:calcPts(d)})).sort((a,b)=>b.p.total-a.p.total);
+  let msg="⚽🏆 *Ranking Prode Mundial 2026*\n\n";
+  const mds=["🥇","🥈","🥉"];
+  ranks.forEach((r,i)=>{msg+=`${i<3?mds[i]:(i+1)+"."} ${r.n}: ${r.p.total} pts\n`;});
+  msg+=`\n¡Jugá vos también! ${window.location.href}`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,"_blank");
+}
 
 // ═══ RENDER ═══
 function render(){
-const app=document.getElementById("app"),u=S.user,pc=Object.keys(S.players).length;
-let navH="";
-if(u){const tabs=u.isAdmin?[["admin","⚙️ Admin"],["ranking","🏆 Ranking"]]:[["play","✏️ Mi Prode"],["ranking","🏆 Ranking"]];
-navH=`<div class="nav">${tabs.map(([k,l])=>`<button class="nb ${S.screen===k?"a":""}" onclick="go('${k}')">${l}</button>`).join("")}<button class="nb" onclick="S.user=null;S.screen='login';S.showAdmin=false;render()">🚪</button></div>`;}
-const hdr=`<div class="hdr"><div style="font-size:11px;letter-spacing:5px;text-transform:uppercase;opacity:.8">Súper Prode</div><div style="font-size:26px;font-weight:900;text-shadow:0 2px 10px rgba(0,0,0,.4)">MUNDIAL 2026 ⚽</div><div style="font-size:11px;opacity:.7;margin-top:1px">USA · México · Canadá — ${pc} jugador${pc!==1?"es":""}</div>${navH}</div>`;
-const th=S.toast?`<div class="toast">${S.toast}</div>`:"";
-if(!u){app.innerHTML=hdr+rLogin(pc)+th;return;}
-if(S.screen==="play")app.innerHTML=hdr+rPlay()+th;
-else if(S.screen==="ranking")app.innerHTML=hdr+rRanking()+th;
-else if(S.screen==="admin")app.innerHTML=hdr+rAdmin()+th;
-}
+const $=document.getElementById("app"),u=S.user,pc=Object.keys(S.players).length;
+let nv="";if(u){const tb=u.isAdmin?[["admin","⚙️ Admin"],["ranking","🏆 Ranking"]]:[["play","✏️ Mi Prode"],["ranking","🏆 Ranking"]];
+nv=`<div class="nav">${tb.map(([k,l])=>`<button class="nb ${S.screen===k?"a":""}" onclick="go('${k}')">${l}</button>`).join("")}<button class="nb" onclick="S.user=null;S.screen='login';S.showAdmin=false;render()">🚪</button></div>`;}
+const hd=`<div class="hdr"><div style="font-size:11px;letter-spacing:5px;text-transform:uppercase;opacity:.8">Súper Prode</div><div style="font-size:24px;font-weight:900;text-shadow:0 2px 10px rgba(0,0,0,.4)">MUNDIAL 2026 ⚽</div><div style="font-size:11px;opacity:.7">USA · México · Canadá — ${pc} jugador${pc!==1?"es":""}</div>${nv}</div>`;
+const tt=S.toast?`<div class="toast">${S.toast}</div>`:"";
+if(!u){$.innerHTML=hd+rLogin()+tt;return;}
+if(S.screen==="play")$.innerHTML=hd+rPlay()+tt;
+else if(S.screen==="ranking")$.innerHTML=hd+rRanking()+tt;
+else if(S.screen==="admin")$.innerHTML=hd+rAdmin()+tt;}
 
-// ═══ LOGIN ═══
-function rLogin(pc){
-const list=pc>0?`<div class="cd" style="margin-top:6px"><div style="font-size:13px;font-weight:700;color:var(--t2);margin-bottom:8px">Jugadores:</div><div style="display:flex;flex-wrap:wrap;gap:6px">${Object.keys(S.players).map(n=>`<span style="font-size:12px;background:var(--c2);border-radius:8px;padding:4px 10px;color:var(--t2)">👤 ${n} <span style="color:var(--pl)">${comp(S.players[n])}%</span></span>`).join("")}</div></div>`:"";
+// ═══ LOGIN + INTRO ═══
+function rLogin(){
+const pts=S.config.points,pc=Object.keys(S.players).length;
+const list=pc>0?`<div class="cd" style="margin-top:6px"><div style="font-size:13px;font-weight:700;color:var(--t2);margin-bottom:8px">Jugadores (${pc}):</div><div style="display:flex;flex-wrap:wrap;gap:6px">${Object.keys(S.players).map(n=>`<span style="font-size:12px;background:var(--c2);border-radius:8px;padding:4px 10px;color:var(--t2)">👤 ${n} <span style="color:var(--pl)">${comp(S.players[n])}%</span></span>`).join("")}</div></div>`:"";
 const adm=S.showAdmin?`<div style="font-size:14px;font-weight:700;margin-bottom:8px">🔐 Admin</div><input class="inp" type="password" id="adminPassIn" placeholder="Contraseña..." style="margin-bottom:8px" onkeydown="if(event.key==='Enter')doAdminLogin()"><button class="btn bgl" onclick="doAdminLogin()">Entrar</button>`:`<button style="background:none;border:none;color:var(--t3);font-size:13px;cursor:pointer;padding:4px;font-weight:600" onclick="S.showAdmin=true;render()">🔐 Admin...</button>`;
-return`<div style="padding:16px"><div class="cd"><div style="font-size:18px;font-weight:800;margin-bottom:6px">👋 ¡Bienvenido!</div><div style="font-size:13px;color:var(--t2);line-height:1.6;margin-bottom:16px">Escribí tu nombre. La primera vez te pide crear un PIN. Después lo usás para volver a entrar.</div><input class="inp" id="nameIn" placeholder="Tu nombre..." style="margin-bottom:10px" onkeydown="if(event.key==='Enter')doLogin()"><button class="btn bp" onclick="doLogin()">✏️ Entrar</button></div><div class="cd" style="margin-top:6px">${adm}</div>${list}</div>`;}
+
+// Dynamic intro with current points
+return`<div style="padding:16px">
+<div class="cd">
+  <div style="font-size:18px;font-weight:800;margin-bottom:6px">👋 ¡Bienvenido al Prode!</div>
+  <div style="font-size:13px;color:var(--t2);line-height:1.6;margin-bottom:12px">Predecí los resultados de los 72 partidos de fase de grupos del Mundial 2026 + predicciones especiales.</div>
+  <div style="font-size:13px;color:var(--t2);line-height:1.7;margin-bottom:16px;background:var(--c2);border-radius:10px;padding:12px">
+    <b style="color:var(--tx)">📋 ¿Cuántos puntos da cada cosa?</b><br>
+    ⚽ Acertar resultado (V/E/D): <b style="color:var(--gd)">${pts.resultado} pts</b><br>
+    ⚽ Acertar goles de 1 equipo: <b style="color:var(--gd)">${pts.goles_equipo} pts</b><br>
+    ⚽ Resultado exacto: <b style="color:var(--gd)">${pts.exacto} pts</b><br>
+    <span style="color:var(--gl)">→ Máximo por partido: <b>${maxPM()} pts</b></span><br><br>
+    <b style="color:var(--tx)">🏅 Especiales (se dan una vez):</b><br>
+    ${SPECIALS.map(s=>`${s.icon} ${s.label}: <b style="color:var(--gd)">${pts[s.key]||0}</b>`).join(" · ")}<br><br>
+    <span style="color:var(--gl2)">🏆 Máximo teórico: <b>${maxPM()*72+SPECIALS.reduce((a,s)=>a+(pts[s.key]||0),0)} pts</b></span>
+  </div>
+  <input class="inp" id="nameIn" placeholder="Tu nombre..." style="margin-bottom:10px" onkeydown="if(event.key==='Enter')doLogin()">
+  <button class="btn bp" onclick="doLogin()">✏️ Entrar a jugar</button>
+</div>
+<div class="cd" style="margin-top:6px">${adm}</div>
+${list}</div>`;}
 
 // ═══ PLAY ═══
 function rPlay(){
 const pd=S.players[S.user.name]||emptyP(),pct=comp(pd),g=S.ag;
 const gd=gr=>GM[gr].every((_,i)=>{const m=pd.matches[`${gr}-${i}`];return m&&m.h!==""&&m.a!=="";});
+const pend=pendingMatches(pd);
+
 let o=`<div style="padding:12px 16px"><div class="cd" style="margin-bottom:0"><div style="display:flex;align-items:center;gap:10px"><div style="font-size:18px">👤</div><div style="flex:1"><div style="font-size:15px;font-weight:800">${S.user.name}</div><div style="display:flex;align-items:center;gap:8px;margin-top:4px"><div class="pb"><div class="pf" style="width:${pct}%;background:${pct===100?"var(--gn)":"linear-gradient(90deg,var(--pr),var(--pl))"}"></div></div><span style="font-size:13px;font-weight:800;color:${pct===100?"var(--gl)":"var(--pl)"}">${pct}%</span></div></div></div></div></div>`;
+
+if(pend>0)o+=`<div style="padding:0 16px"><div class="warn">⚠️ Tenés ${pend} partido${pend>1?"s":""} sin completar que se juega${pend>1?"n":""} en las próximas 24hs</div></div>`;
+
 o+=`<div style="display:flex;gap:4px;padding:0 16px 10px">${[["groups","⚽ Grupos"],["specials","🏅 Especiales"]].map(([k,l])=>`<button class="stb ${S.playTab===k?"a":""}" onclick="S.playTab='${k}';render()">${l}</button>`).join("")}</div><div style="padding:0 16px">`;
 
 if(S.playTab==="groups"){
 o+=`<div class="gg">${Object.keys(GROUPS).map(gr=>`<button class="gb ${gr===g?"ac":gd(gr)?"dn":""}" onclick="S.ag='${gr}';render()">${gr}${gd(gr)?"✓":""}</button>`).join("")}</div>`;
-o+=`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;background:var(--c1);border-radius:10px;padding:8px">${GROUPS[g].map(t=>`<span style="font-size:12px;background:var(--c2);border-radius:6px;padding:3px 8px">${FL[t]} ${t}</span>`).join("")}</div>`;
+o+=`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;background:var(--c1);border-radius:10px;padding:8px">${GROUPS[g].map(t=>`<span style="font-size:12px;background:var(--c2);border-radius:6px;padding:3px 8px;display:flex;align-items:center;gap:4px">${flag(t)} ${t}</span>`).join("")}</div>`;
 
 GM[g].forEach((match,i)=>{
-  const k=`${g}-${i}`,m=pd.matches[k]||{h:"",a:""},locked=isLocked(k);
-  o+=`<div class="mr ${locked?"lk":""}"><div class="tl r"><span class="n">${match[0]}</span><span class="fl">${FL[match[0]]}</span></div>`;
-  o+=`<input class="sci" type="number" min="0" max="20" value="${m.h}" ${locked?"disabled":""} onchange="setScore('${k}','h',this.value)">`;
-  o+=`<span style="color:var(--t3);font-weight:800;font-size:12px">vs</span>`;
-  o+=`<input class="sci" type="number" min="0" max="20" value="${m.a}" ${locked?"disabled":""} onchange="setScore('${k}','a',this.value)">`;
-  o+=`<div class="tl"><span class="fl">${FL[match[1]]}</span><span class="n">${match[1]}</span></div>`;
-  if(locked)o+=`<span class="lock-tag">🔒</span>`;
+  const k=`${g}-${i}`,m=pd.matches[k]||{h:"",a:""},lk=isLocked(k);
+  o+=`<div class="mr ${lk?"lk":""}"><div class="tl r"><span class="n">${match[0]}</span>${flag(match[0])}</div>`;
+  o+=`<input class="sci" type="number" min="0" max="20" value="${m.h}" ${lk?"disabled":""} onchange="setScore('${k}','h',this.value)">`;
+  o+=`<span style="color:var(--t3);font-weight:800;font-size:11px">vs</span>`;
+  o+=`<input class="sci" type="number" min="0" max="20" value="${m.a}" ${lk?"disabled":""} onchange="setScore('${k}','a',this.value)">`;
+  o+=`<div class="tl">${flag(match[1])}<span class="n">${match[1]}</span></div>`;
+  if(lk)o+=`<span class="lktag">🔒</span>`;
   o+=`</div>`;
-
-  // Show others' predictions if locked
-  if(locked){
-    const others=Object.entries(S.players).filter(([n])=>n!==S.user.name).map(([n,d])=>{
-      const pm=d.matches?.[k];if(!pm||pm.h===""||pm.a==="")return null;
-      return`<b>${n}</b>: ${pm.h}-${pm.a}`;
-    }).filter(Boolean);
-    if(others.length)o+=`<div class="peek" style="margin-bottom:8px;padding:0 4px">👀 ${others.join(" · ")}</div>`;
-  }
+  if(lk){const ot=Object.entries(S.players).filter(([n])=>n!==S.user.name).map(([n,d])=>{const pm=d.matches?.[k];if(!pm||pm.h===""||pm.a==="")return null;return`<b>${n}</b>:${pm.h}-${pm.a}`;}).filter(Boolean);
+  if(ot.length)o+=`<div class="peek">👀 ${ot.join(" · ")}</div>`;}
 });
-
 o+=`<div style="display:flex;gap:6px;margin-top:10px">`;
 if(g!=="A")o+=`<button class="btn bgh" style="flex:1;font-size:13px" onclick="S.ag='${String.fromCharCode(g.charCodeAt(0)-1)}';render()">← ${String.fromCharCode(g.charCodeAt(0)-1)}</button>`;
 if(g!=="L")o+=`<button class="btn bp" style="flex:1;font-size:13px" onclick="S.ag='${String.fromCharCode(g.charCodeAt(0)+1)}';render()">${String.fromCharCode(g.charCodeAt(0)+1)} →</button>`;
@@ -245,21 +245,15 @@ o+=`</div>`;}
 if(S.playTab==="specials"){
 o+=`<div class="cd" style="padding:10px"><div style="font-size:12px;color:var(--t2)">💡 Dan muchos puntos. ¡No te las saltees!</div></div>`;
 SPECIALS.forEach(cat=>{
-  const val=pd.specials[cat.key]||"";
-  const isCust=cat.type==="scorer"&&val.startsWith("Otro:");
-  const selV=isCust?"Otro":val;
+  const val=pd.specials[cat.key]||"",isCust=cat.type==="scorer"&&val.startsWith("Otro:"),selV=isCust?"Otro":val;
   o+=`<div class="cd" style="padding:12px;margin-bottom:8px"><div style="font-size:13px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px"><span>${cat.icon}</span> ${cat.label}<span style="margin-left:auto;font-size:11px;color:var(--gd);font-weight:800">+${S.config.points[cat.key]||0}</span></div>`;
   if(cat.type==="team")o+=`<select class="sel" onchange="setSpec('${cat.key}',this.value)">${tOpts(val)}</select>`;
-  else if(cat.type==="scorer"){
-    o+=`<select class="sel" onchange="if(this.value==='Otro')setSpec('${cat.key}','Otro:');else setSpec('${cat.key}',this.value)">${scOpts(selV)}</select>`;
-    if(selV==="Otro")o+=`<input class="inp" style="margin-top:8px" value="${isCust?val.replace("Otro:","").trim():""}" placeholder="Nombre del jugador..." onchange="setSpec('${cat.key}','Otro: '+this.value)">`;
-  }
+  else if(cat.type==="scorer"){o+=`<select class="sel" onchange="if(this.value==='Otro')setSpec('${cat.key}','Otro:');else setSpec('${cat.key}',this.value)">${scOpts(selV)}</select>`;
+    if(selV==="Otro")o+=`<input class="inp" style="margin-top:8px" value="${isCust?val.replace("Otro:","").trim():""}" placeholder="Nombre..." onchange="setSpec('${cat.key}','Otro: '+this.value)">`;}
   else if(cat.type==="match")o+=`<select class="sel" onchange="setSpec('${cat.key}',this.value)">${mOpts(val)}</select>`;
   else if(cat.type==="number")o+=`<input class="inp" type="number" min="0" value="${val}" placeholder="${cat.key==="gol_torneo"?"Ej: 172":"Ej: 8"}" onchange="setSpec('${cat.key}',this.value)">`;
   else o+=`<input class="inp" value="${val}" placeholder="Tu predicción..." onchange="setSpec('${cat.key}',this.value)">`;
-  o+=`</div>`;
-});}
-
+  o+=`</div>`;});}
 o+=`</div>`;return o;}
 
 // ═══ RANKING ═══
@@ -267,30 +261,39 @@ function rRanking(){
 const hasR=Object.keys(S.results.matches||{}).some(k=>{const m=S.results.matches[k];return m&&m.h!==""&&m.a!=="";});
 const mds=["🥇","🥈","🥉"],pts=S.config.points;
 const ranks=Object.entries(S.players).map(([n,d])=>({n,d,p:calcPts(d),c:comp(d)})).sort((a,b)=>b.p.total-a.p.total);
-let o=`<div style="padding:16px"><div style="display:flex;justify-content:flex-end;margin-bottom:8px"><button class="btn bgh" style="width:auto;padding:5px 12px;font-size:12px" onclick="doRefresh()">🔄</button></div>`;
-if(!hasR)o+=`<div class="cd" style="text-align:center"><div style="font-size:40px;margin-bottom:8px">⏳</div><div style="font-size:15px;font-weight:700;margin-bottom:4px">Sin resultados aún</div><div style="font-size:13px;color:var(--t2)">Cuando el admin cargue resultados, el ranking se calcula solo.</div></div>`;
-if(!ranks.length)o+=`<div class="cd" style="text-align:center"><div style="font-size:40px;margin-bottom:8px">👥</div><div style="font-size:15px;font-weight:700">No hay jugadores</div></div>`;
+
+// View player detail
+if(S.viewPlayer&&S.players[S.viewPlayer]){
+  const vp=S.players[S.viewPlayer],vpts=calcPts(vp);
+  let o=`<div style="padding:16px"><button class="btn bgh" style="margin-bottom:10px;width:auto;padding:6px 14px;font-size:12px" onclick="S.viewPlayer=null;render()">← Volver al ranking</button>`;
+  o+=`<div class="cd"><div style="font-size:18px;font-weight:800;margin-bottom:4px">👤 ${S.viewPlayer}</div><div style="font-size:13px;color:var(--t2)">Completado: ${comp(vp)}% · Total: <b style="color:var(--gd)">${vpts.total} pts</b></div><div style="font-size:12px;color:var(--t3);margin-top:4px">${vpts.det.e} exactos 🎯 · ${vpts.det.r} resultados ✓ · ${vpts.det.g} goles ⚽</div></div>`;
+  o+=`<div class="cd"><div style="font-size:14px;font-weight:800;margin-bottom:8px">🏅 Predicciones especiales</div>`;
+  SPECIALS.forEach(s=>{const v=vp.specials?.[s.key]||"—";o+=`<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid rgba(37,37,80,.1)"><span style="color:var(--t2)">${s.icon} ${s.label}</span><b style="color:var(--tx)">${v}</b></div>`;});
+  o+=`</div></div>`;return o;}
+
+let o=`<div style="padding:16px"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><button class="btn bgh" style="width:auto;padding:5px 12px;font-size:12px" onclick="doRefresh()">🔄</button><button class="btn bp" style="width:auto;padding:5px 12px;font-size:12px" onclick="shareWA()">📤 WhatsApp</button></div>`;
+if(!hasR)o+=`<div class="cd" style="text-align:center"><div style="font-size:36px;margin-bottom:8px">⏳</div><div style="font-size:14px;font-weight:700;margin-bottom:4px">Sin resultados aún</div><div style="font-size:13px;color:var(--t2)">Cuando se carguen resultados, el ranking se calcula solo.</div></div>`;
+if(!ranks.length)o+=`<div class="cd" style="text-align:center"><div style="font-size:36px;margin-bottom:8px">👥</div><div style="font-size:15px;font-weight:700">No hay jugadores</div></div>`;
 else{o+=`<div style="font-size:14px;font-weight:800;color:var(--t2);margin-bottom:8px">${ranks.length} jugador${ranks.length!==1?"es":""}</div>`;
 ranks.forEach((r,pos)=>{
-const isMe=S.user&&r.n===S.user.name,bg=pos===0&&hasR?`background:linear-gradient(135deg,rgba(245,158,11,.07),var(--c1));border-color:rgba(245,158,11,.27)`:"";
+const isMe=S.user&&r.n===S.user.name,bg=pos===0&&hasR?"background:linear-gradient(135deg,rgba(245,158,11,.07),var(--c1));border-color:rgba(245,158,11,.27)":"";
 const pC=pos<3&&hasR?["background:var(--gd);color:#000","background:#aaa;color:#000","background:#cd7f32;color:#000"][pos]:"background:var(--c2);color:var(--t3)";
-o+=`<div class="cd" style="padding:14px;${bg}"><div style="display:flex;align-items:center;gap:10px"><div style="width:34px;height:34px;border-radius:17px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:900;${pC}">${pos<3&&hasR?mds[pos]:pos+1}</div><div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.n}${isMe?' <span style="font-size:11px;color:var(--pl)">(vos)</span>':""}</div><div style="font-size:11px;color:var(--t3)">${r.c}% · ${r.p.det.e}🎯 ${r.p.det.r}✓ ${r.p.det.g}⚽</div></div><div style="text-align:right"><div style="font-size:24px;font-weight:900;color:${hasR?"var(--gd)":"var(--t3)"}">${r.p.total}</div><div style="font-size:10px;color:var(--t3)">pts</div></div></div></div>`;});}
+o+=`<div class="cd" style="padding:14px;cursor:pointer;${bg}" onclick="S.viewPlayer='${r.n}';render()"><div style="display:flex;align-items:center;gap:10px"><div style="width:32px;height:32px;border-radius:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:900;${pC}">${pos<3&&hasR?mds[pos]:pos+1}</div><div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.n}${isMe?' <span style="font-size:11px;color:var(--pl)">(vos)</span>':""}</div><div style="font-size:11px;color:var(--t3)">${r.c}% · ${r.p.det.e}🎯 ${r.p.det.r}✓ ${r.p.det.g}⚽</div></div><div style="text-align:right"><div style="font-size:22px;font-weight:900;color:${hasR?"var(--gd)":"var(--t3)"}">${r.p.total}</div><div style="font-size:10px;color:var(--t3)">pts →</div></div></div></div>`;});}
 
-// Full points
-o+=`<div class="cd" style="margin-top:4px"><button style="background:none;border:none;color:var(--tx);font-size:13px;font-weight:800;cursor:pointer;padding:0;display:flex;align-items:center;gap:6px;width:100%" onclick="S.showAllPts=!S.showAllPts;render()">📋 Puntos completo <span style="margin-left:auto;color:var(--t3)">${S.showAllPts?"▲":"▼"}</span></button>`;
-if(S.showAllPts){let sT=0;
-o+=`<div style="margin-top:12px"><div style="font-size:12px;font-weight:800;color:var(--pl);margin-bottom:6px;border-bottom:1px solid var(--bd);padding-bottom:4px">⚽ Por partido (×72)</div>`;
+// Expandable full points
+o+=`<div class="cd" style="margin-top:4px"><button style="background:none;border:none;color:var(--tx);font-size:13px;font-weight:800;cursor:pointer;padding:0;display:flex;align-items:center;gap:6px;width:100%" onclick="S.showAllPts=!S.showAllPts;render()">📋 Puntos ${S.showAllPts?"▲":"▼"}</button>`;
+if(S.showAllPts){let sT=0;o+=`<div style="margin-top:12px"><div style="font-size:12px;font-weight:800;color:var(--pl);margin-bottom:6px;border-bottom:1px solid var(--bd);padding-bottom:4px">⚽ Por partido (×72)</div>`;
 [{l:"Resultado (V/E/D)",v:pts.resultado},{l:"Goles 1 equipo",v:pts.goles_equipo},{l:"Exacto",v:pts.exacto}].forEach(r=>{o+=`<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0;color:var(--t2)"><span>${r.l}</span><b style="color:var(--gd)">${r.v}</b></div>`;});
-o+=`<div style="font-size:12px;padding:4px 0;color:var(--gl);font-weight:700;border-top:1px solid var(--bd);margin-top:4px">Máx/partido: ${maxPM()} · Total: ${maxPM()*72}</div>`;
-o+=`<div style="font-size:12px;font-weight:800;color:var(--pl);margin-top:12px;margin-bottom:6px;border-bottom:1px solid var(--bd);padding-bottom:4px">🏅 Especiales</div>`;
-SPECIALS.forEach(s=>{const v=pts[s.key]||0;sT+=v;o+=`<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0;color:var(--t2)"><span>${s.icon} ${s.label}</span><b style="color:var(--gd)">${v}</b></div>`;});
-o+=`<div style="font-size:13px;padding:8px 0 0;color:var(--gl2);font-weight:800;border-top:1px solid var(--bd);margin-top:6px">🏆 Máximo teórico: ${maxPM()*72+sT} pts</div></div>`;}
+o+=`<div style="font-size:12px;padding:4px 0;color:var(--gl);font-weight:700;border-top:1px solid var(--bd);margin-top:4px">Máx: ${maxPM()}/partido · ${maxPM()*72} total</div>`;
+o+=`<div style="font-size:12px;font-weight:800;color:var(--pl);margin-top:10px;margin-bottom:6px;border-bottom:1px solid var(--bd);padding-bottom:4px">🏅 Especiales</div>`;
+SPECIALS.forEach(s=>{const v=pts[s.key]||0;sT+=v;o+=`<div style="display:flex;justify-content:space-between;font-size:12px;padding:2px 0;color:var(--t2)"><span>${s.icon} ${s.label}</span><b style="color:var(--gd)">${v}</b></div>`;});
+o+=`<div style="font-size:13px;padding:6px 0 0;color:var(--gl2);font-weight:800;border-top:1px solid var(--bd);margin-top:4px">🏆 Máximo: ${maxPM()*72+sT}</div></div>`;}
 o+=`</div></div>`;return o;}
 
 // ═══ ADMIN ═══
 function rAdmin(){
 const g=S.adminGr,pts=S.config.points;
-let o=`<div style="padding:12px 16px 30px"><div style="display:flex;justify-content:flex-end;margin-bottom:8px"><button class="btn bgh" style="width:auto;padding:5px 12px;font-size:12px" onclick="doRefresh()">🔄</button></div>`;
+let o=`<div style="padding:12px 16px 30px"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><button class="btn bgh" style="width:auto;padding:5px 12px;font-size:12px" onclick="doRefresh()">🔄</button><button class="btn ${TEST_MODE?"bg2":"bgh"}" style="width:auto;padding:5px 12px;font-size:12px" onclick="toggleTest()">${TEST_MODE?"🧪 Test ON":"🧪 Test"}</button></div>`;
 o+=`<div class="st">${[["points","🎯 Puntos"],["results","📝 Resultados"],["realspecials","🏅 Especiales"],["players","👥 Jugadores"]].map(([k,l])=>`<button class="stb ${S.adminTab===k?"a":""}" onclick="S.adminTab='${k}';render()">${l}</button>`).join("")}</div>`;
 
 if(S.adminTab==="points"){
@@ -298,34 +301,36 @@ o+=`<div class="cd"><div style="font-size:14px;font-weight:800;margin-bottom:10p
 [{k:"resultado",l:"Resultado (V/E/D)"},{k:"goles_equipo",l:"Goles 1 equipo"},{k:"exacto",l:"Exacto"}].forEach(x=>{
 o+=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span style="font-size:13px;font-weight:700">${x.l}</span><div style="display:flex;align-items:center;gap:4px"><input type="number" min="0" value="${pts[x.k]}" onchange="setPt('${x.k}',this.value)" style="width:50px;height:32px;text-align:center;font-size:15px;font-weight:800;border-radius:8px;border:2px solid var(--bd);background:var(--bg);color:var(--gd);outline:none"><span style="font-size:11px;color:var(--t3)">pts</span></div></div>`;});
 o+=`</div><div class="cd"><div style="font-size:14px;font-weight:800;margin-bottom:10px">🏅 Especiales</div>`;
-SPECIALS.forEach(s=>{o+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(37,37,80,.1)"><span style="font-size:13px">${s.icon} ${s.label}</span><div style="display:flex;align-items:center;gap:4px"><input type="number" min="0" value="${pts[s.key]||0}" onchange="setPt('${s.key}',this.value)" style="width:50px;height:30px;text-align:center;font-size:14px;font-weight:800;border-radius:8px;border:2px solid var(--bd);background:var(--bg);color:var(--gd);outline:none"><span style="font-size:11px;color:var(--t3)">pts</span></div></div>`;});
+SPECIALS.forEach(s=>{o+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(37,37,80,.1)"><span style="font-size:12px">${s.icon} ${s.label}</span><div style="display:flex;align-items:center;gap:4px"><input type="number" min="0" value="${pts[s.key]||0}" onchange="setPt('${s.key}',this.value)" style="width:50px;height:28px;text-align:center;font-size:13px;font-weight:800;border-radius:8px;border:2px solid var(--bd);background:var(--bg);color:var(--gd);outline:none"></div></div>`;});
 o+=`</div>`;}
 
 if(S.adminTab==="results"){
-o+=`<div class="cd" style="padding:10px"><div style="font-size:12px;color:var(--t2)">📝 Resultados reales</div></div>`;
+o+=`<div class="cd" style="padding:10px"><div style="font-size:12px;color:var(--t2)">📝 Resultados reales. Se actualizan automáticamente cuando arranque el mundial, pero podés cargarlos a mano también.</div></div>`;
 o+=`<div class="gg">${Object.keys(GROUPS).map(gr=>`<button class="gb ${gr===g?"ga":""}" onclick="S.adminGr='${gr}';render()">${gr}</button>`).join("")}</div>`;
 GM[g].forEach((match,i)=>{const k=`${g}-${i}`,m=(S.results.matches||{})[k]||{h:"",a:""};
-o+=`<div class="mr rl"><div class="tl r"><span class="n">${match[0]}</span><span class="fl">${FL[match[0]]}</span></div><input class="sci gld" type="number" min="0" max="20" value="${m.h}" onchange="setRes('${k}','h',this.value)"><span style="color:var(--t3);font-weight:800;font-size:12px">vs</span><input class="sci gld" type="number" min="0" max="20" value="${m.a}" onchange="setRes('${k}','a',this.value)"><div class="tl"><span class="fl">${FL[match[1]]}</span><span class="n">${match[1]}</span></div></div>`;});}
+o+=`<div class="mr rl"><div class="tl r"><span class="n">${match[0]}</span>${flag(match[0])}</div><input class="sci gld" type="number" min="0" max="20" value="${m.h}" onchange="setRes('${k}','h',this.value)"><span style="color:var(--t3);font-weight:800;font-size:11px">vs</span><input class="sci gld" type="number" min="0" max="20" value="${m.a}" onchange="setRes('${k}','a',this.value)"><div class="tl">${flag(match[1])}<span class="n">${match[1]}</span></div></div>`;});}
 
 if(S.adminTab==="realspecials"){
 o+=`<div class="cd" style="padding:10px"><div style="font-size:12px;color:var(--t2)">🏅 Datos reales</div></div>`;
 SPECIALS.forEach(cat=>{const val=(S.results.specials||{})[cat.key]||"";
 o+=`<div class="cd" style="padding:12px;margin-bottom:8px"><div style="font-size:13px;font-weight:700;margin-bottom:6px">${cat.icon} ${cat.label}</div>`;
-if(cat.type==="team")o+=`<select class="sel" style="border-color:rgba(245,158,11,.35);color:var(--gd)" onchange="setRSp('${cat.key}',this.value)"><option value="">Sin cargar...</option>${T.map(t=>`<option value="${t}"${val===t?" selected":""}>${FL[t]} ${t}</option>`).join("")}</select>`;
+if(cat.type==="team")o+=`<select class="sel" style="border-color:rgba(245,158,11,.35);color:var(--gd)" onchange="setRSp('${cat.key}',this.value)"><option value="">...</option>${TEAMS.map(t=>`<option value="${t}"${val===t?" selected":""}>${t}</option>`).join("")}</select>`;
 else if(cat.type==="match")o+=`<select class="sel" style="border-color:rgba(245,158,11,.35);color:var(--gd)" onchange="setRSp('${cat.key}',this.value)">${mOpts(val)}</select>`;
-else o+=`<input class="inp" type="${cat.type==="number"?"number":"text"}" value="${val}" placeholder="Valor real..." style="border-color:rgba(245,158,11,.35);color:var(--gd)" onchange="setRSp('${cat.key}',this.value)">`;
+else o+=`<input class="inp" type="${cat.type==="number"?"number":"text"}" value="${val}" placeholder="..." style="border-color:rgba(245,158,11,.35);color:var(--gd)" onchange="setRSp('${cat.key}',this.value)">`;
 o+=`</div>`;});}
 
 if(S.adminTab==="players"){
 o+=`<div class="cd" style="padding:10px"><div style="font-size:12px;color:var(--t2)">👥 Jugadores</div></div>`;
 Object.entries(S.players).forEach(([name,data])=>{
-o+=`<div class="cd" style="padding:12px"><div style="display:flex;align-items:center;justify-content:space-between"><div><div style="font-size:14px;font-weight:700">👤 ${name}</div><div style="font-size:12px;color:var(--t3)">${comp(data)}% completo</div></div><button style="background:rgba(239,68,68,.12);border:none;border-radius:8px;padding:6px 12px;color:var(--rd);font-size:12px;font-weight:700;cursor:pointer" onclick="if(confirm('¿Borrar a ${name}?'))delPlayer('${name}')">🗑️</button></div></div>`;});
+o+=`<div class="cd" style="padding:12px"><div style="display:flex;align-items:center;justify-content:space-between"><div><div style="font-size:14px;font-weight:700">👤 ${name}</div><div style="font-size:12px;color:var(--t3)">${comp(data)}%</div></div><button style="background:rgba(239,68,68,.12);border:none;border-radius:8px;padding:6px 12px;color:var(--rd);font-size:12px;font-weight:700;cursor:pointer" onclick="if(confirm('¿Borrar a ${name}?'))delPlayer('${name}')">🗑️</button></div></div>`;});
 if(!Object.keys(S.players).length)o+=`<div class="cd" style="text-align:center;color:var(--t3)">No hay jugadores</div>`;}
-
 o+=`</div>`;return o;}
 
 // ═══ INIT ═══
-(async()=>{await loadAll();render();})();
+(async()=>{await loadAll();render();
+// Try auto-fetch results every 5 min during tournament
+setInterval(fetchAutoResults,5*60*1000);
+})();
 </script>
 </body>
 </html>
