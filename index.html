@@ -16,6 +16,8 @@ const SUPABASE_URL = "https://lztqfyscjyezicqulckb.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx6dHFmeXNjanllemljcXVsY2tiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzMyNDIsImV4cCI6MjA5MDg0OTI0Mn0.mumeKEZIuZ_DxmC2v5y2LksOIkKuNUZpJJdqifT0drw";
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="api.js"></script>
+<script src="knockout.js"></script>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -101,13 +103,13 @@ const SPECIALS=[
 const DP={resultado:3,goles_equipo:1,exacto:5,campeon:20,subcampeon:12,tercero:8,goleador:15,goles_goleador:10,mas_goleador:8,menos_recibe:8,mas_goleado:8,menos_goles:8,ultimo:8,decepcion:6,sorpresa:6,mvp:12,mejor_arq:10,mejor_joven:10,gol_torneo:10,partido_mas_goles:5};
 const AH="7d93823faecc8df64da2d16c6de6c8ee54fae1fec2278efcede48d7a0ed00c04";
 async function sha256(t){const d=new TextEncoder().encode(t);const b=await crypto.subtle.digest("SHA-256",d);return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,"0")).join("");}
-function emptyP(){const p={matches:{},specials:{}};Object.entries(GM).forEach(([g,ms])=>ms.forEach((_,i)=>{p.matches[`${g}-${i}`]={h:"",a:""};}));return p;}
+function emptyP(){const p={matches:{},specials:{},knockout:{}};Object.entries(GM).forEach(([g,ms])=>ms.forEach((_,i)=>{p.matches[`${g}-${i}`]={h:"",a:""};}));if(typeof emptyKoPreds==="function")p.knockout=emptyKoPreds();return p;}
 function tOpts(s){return`<option value="">Elegí...</option>${TEAMS.map(t=>`<option value="${t}"${s===t?" selected":""}>${t}</option>`).join("")}`;}
 function scOpts(s){return`<option value="">Elegí...</option>${SCORERS.map(x=>`<option value="${x}"${s===x?" selected":""}>${x}</option>`).join("")}`;}
 function mOpts(s){return`<option value="">Elegí partido...</option>${ALL_M.map(m=>`<option value="${m.k}"${s===m.k?" selected":""}>${m.l}</option>`).join("")}`;}
 
 // ═══ STATE ═══
-let S={screen:"login",user:null,config:{points:{...DP}},players:{},results:{matches:{},specials:{}},playTab:"groups",ag:"A",adminTab:"points",adminGr:"A",toast:"",showAllPts:false,showAdmin:false,viewPlayer:null};
+let S={screen:"login",user:null,config:{points:{...DP}},players:{},results:{matches:{},specials:{},knockout:{}},playTab:"groups",ag:"A",adminTab:"points",adminGr:"A",toast:"",showAllPts:false,showAdmin:false,viewPlayer:null,koRound:"R32",adminKoRound:"R32"};
 async function loadAll(){const[c,p,r]=await Promise.all([dbGet("prode-config"),dbGet("prode-players"),dbGet("prode-results")]);if(c)S.config=c;if(p)S.players=p;if(r)S.results=r;}
 function toast(m){S.toast=m;render();setTimeout(()=>{S.toast="";render();},2e3);}
 function comp(pd){if(!pd)return 0;const mF=Object.values(pd.matches||{}).filter(m=>m.h!==""&&m.a!=="").length;const sF=SPECIALS.filter(c=>(pd.specials||{})[c.key]&&pd.specials[c.key]!=="").length;return Math.round(((mF+sF)/(72+SPECIALS.length))*100);}
@@ -115,32 +117,43 @@ function calcPts(pd){if(!pd)return{total:0,det:{e:0,r:0,g:0}};const pts=S.config
 Object.entries(GM).forEach(([g,ms])=>{ms.forEach((_,i)=>{const k=`${g}-${i}`,pr=pd.matches?.[k],re=S.results.matches?.[k];if(!pr||!re||pr.h===""||pr.a===""||re.h===""||re.a==="")return;const pH=+pr.h,pA=+pr.a,rH=+re.h,rA=+re.a;if(pH===rH&&pA===rA){mP+=(pts.exacto||0)+(pts.resultado||0)+(pts.goles_equipo||0)*2;det.e++;det.r++;det.g+=2;return;}if(Math.sign(pH-pA)===Math.sign(rH-rA)){mP+=pts.resultado||0;det.r++;}if(pH===rH){mP+=pts.goles_equipo||0;det.g++;}if(pA===rA){mP+=pts.goles_equipo||0;det.g++;}});});
 const rSp=S.results.specials||{};SPECIALS.forEach(c=>{const pr=pd.specials?.[c.key],re=rSp[c.key];if(!pr||!re||pr===""||re==="")return;if(c.type==="number"){if(+pr===+re)sP+=pts[c.key]||0;}else{if(pr.toLowerCase().trim()===re.toLowerCase().trim())sP+=pts[c.key]||0;}});
 return{total:mP+sP,det};}
+// Add KO points
+function calcTotalPts(pd){
+  const gp=calcPts(pd);
+  if(typeof calcKoPts==="function"){
+    const kp=calcKoPts(pd.knockout,S.results.knockout,S.config.points);
+    return{total:gp.total+kp.total,det:{e:gp.det.e+kp.det.e,r:gp.det.r+kp.det.r,g:gp.det.g+kp.det.g}};
+  }
+  return gp;
+}
 function maxPM(){const p=S.config.points;return(p.resultado||0)+(p.goles_equipo||0)*2+(p.exacto||0);}
 
 // Upcoming unlocked matches count
 function pendingMatches(pd){if(!pd)return 0;let c=0;const now=new Date(),soon=new Date(now.getTime()+24*60*60*1000);
 Object.keys(KO).forEach(k=>{const ko=new Date(KO[k]);if(ko>now&&ko<=soon){const m=pd.matches?.[k];if(!m||m.h===""||m.a==="")c++;}});return c;}
 
-// ═══ AUTO RESULTS (fetches from openfootball GitHub JSON) ═══
+// ═══ AUTO RESULTS — uses api.js ═══
+// Real fetch: calls autoFetchResults from api.js
 async function fetchAutoResults(){
-  try{
-    const r=await fetch("https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json");
-    if(!r.ok)return;
-    const data=await r.json();
-    // Parse and map to our format - this will work once tournament starts and data is updated
-    if(data&&data.matches){
-      let changed=false;
-      // Map team names to our format (basic mapping)
-      data.matches.forEach(m=>{
-        if(m.score1!==undefined&&m.score2!==undefined&&m.score1!==null){
-          // Find matching key in our system
-          // This is a simplified mapping - would need full team name mapping
-          changed=true;
-        }
-      });
-      if(changed){await dbSet("prode-results",S.results);render();}
-    }
-  }catch(e){console.log("Auto-fetch not available yet:",e.message);}
+  if(typeof autoFetchResults==="function"){
+    await autoFetchResults(GM,S,dbSet,()=>render());
+  }
+}
+// Test handlers for admin panel
+async function runApiTest(){
+  toast("🧪 Cargando datos del Mundial 2022...");
+  const r=await testWithQatar2022(GM,S,dbSet,()=>{});
+  await loadAll();render();
+  toast(r.message);
+}
+async function clearTest(){
+  const r=await clearTestResults(S,dbSet,()=>{});
+  await loadAll();render();
+  toast(r);
+}
+async function checkApi(){
+  const r=await checkApiStatus();
+  toast(r.msg);
 }
 
 // ═══ HANDLERS ═══
@@ -156,6 +169,9 @@ async function setSpec(k,v){S.players[S.user.name].specials[k]=v;await dbSet("pr
 async function setPt(k,v){S.config.points[k]=parseInt(v)||0;await dbSet("prode-config",S.config);render();}
 async function setRes(k,si,v){if(!S.results.matches[k])S.results.matches[k]={h:"",a:""};S.results.matches[k][si]=v;await dbSet("prode-results",S.results);render();}
 async function setRSp(k,v){if(!S.results.specials)S.results.specials={};S.results.specials[k]=v;await dbSet("prode-results",S.results);render();}
+async function setKoScore(id,si,v){if(!S.players[S.user.name].knockout)S.players[S.user.name].knockout={};if(!S.players[S.user.name].knockout[id])S.players[S.user.name].knockout[id]={h:"",a:""};S.players[S.user.name].knockout[id][si]=v;await dbSet("prode-players",S.players);render();}
+async function setKoRes(id,si,v){if(!S.results.knockout)S.results.knockout={};if(!S.results.knockout[id])S.results.knockout[id]={h:"",a:""};S.results.knockout[id][si]=v;await dbSet("prode-results",S.results);render();}
+async function setKoPen(id,who){if(!S.results.knockout)S.results.knockout={};if(!S.results.knockout[id])S.results.knockout[id]={h:"",a:""};S.results.knockout[id].pen=who;await dbSet("prode-results",S.results);render();}
 async function delPlayer(n){delete S.players[n];await dbSet("prode-players",S.players);toast("Borrado: "+n);}
 async function doRefresh(){await loadAll();toast("🔄 Actualizado");}
 function go(s){S.screen=s;S.viewPlayer=null;if(s==="ranking"||s==="admin")loadAll().then(render);else render();}
@@ -219,7 +235,7 @@ let o=`<div style="padding:12px 16px"><div class="cd" style="margin-bottom:0"><d
 
 if(pend>0)o+=`<div style="padding:0 16px"><div class="warn">⚠️ Tenés ${pend} partido${pend>1?"s":""} sin completar que se juega${pend>1?"n":""} en las próximas 24hs</div></div>`;
 
-o+=`<div style="display:flex;gap:4px;padding:0 16px 10px">${[["groups","⚽ Grupos"],["specials","🏅 Especiales"]].map(([k,l])=>`<button class="stb ${S.playTab===k?"a":""}" onclick="S.playTab='${k}';render()">${l}</button>`).join("")}</div><div style="padding:0 16px">`;
+o+=`<div style="display:flex;gap:4px;padding:0 16px 10px">${[["groups","⚽ Grupos"],["knockout","🏆 Eliminatorias"],["specials","🏅 Especiales"]].map(([k,l])=>`<button class="stb ${S.playTab===k?"a":""}" onclick="S.playTab='${k}';render()">${l}</button>`).join("")}</div><div style="padding:0 16px">`;
 
 if(S.playTab==="groups"){
 o+=`<div class="gg">${Object.keys(GROUPS).map(gr=>`<button class="gb ${gr===g?"ac":gd(gr)?"dn":""}" onclick="S.ag='${gr}';render()">${gr}${gd(gr)?"✓":""}</button>`).join("")}</div>`;
@@ -242,6 +258,13 @@ if(g!=="A")o+=`<button class="btn bgh" style="flex:1;font-size:13px" onclick="S.
 if(g!=="L")o+=`<button class="btn bp" style="flex:1;font-size:13px" onclick="S.ag='${String.fromCharCode(g.charCodeAt(0)+1)}';render()">${String.fromCharCode(g.charCodeAt(0)+1)} →</button>`;
 o+=`</div>`;}
 
+if(S.playTab==="knockout"){
+if(typeof renderKoPlay==="function"){
+  o+=renderKoPlay(S,pd,flag,isKoLocked,setKoScore);
+} else {
+  o+=`<div class="cd" style="text-align:center;color:var(--t3)">Cargando eliminatorias...</div>`;
+}}
+
 if(S.playTab==="specials"){
 o+=`<div class="cd" style="padding:10px"><div style="font-size:12px;color:var(--t2)">💡 Dan muchos puntos. ¡No te las saltees!</div></div>`;
 SPECIALS.forEach(cat=>{
@@ -260,7 +283,7 @@ o+=`</div>`;return o;}
 function rRanking(){
 const hasR=Object.keys(S.results.matches||{}).some(k=>{const m=S.results.matches[k];return m&&m.h!==""&&m.a!=="";});
 const mds=["🥇","🥈","🥉"],pts=S.config.points;
-const ranks=Object.entries(S.players).map(([n,d])=>({n,d,p:calcPts(d),c:comp(d)})).sort((a,b)=>b.p.total-a.p.total);
+const ranks=Object.entries(S.players).map(([n,d])=>({n,d,p:typeof calcTotalPts==="function"?calcTotalPts(d):calcPts(d),c:comp(d)})).sort((a,b)=>b.p.total-a.p.total);
 
 // View player detail
 if(S.viewPlayer&&S.players[S.viewPlayer]){
@@ -293,8 +316,8 @@ o+=`</div></div>`;return o;}
 // ═══ ADMIN ═══
 function rAdmin(){
 const g=S.adminGr,pts=S.config.points;
-let o=`<div style="padding:12px 16px 30px"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><button class="btn bgh" style="width:auto;padding:5px 12px;font-size:12px" onclick="doRefresh()">🔄</button><button class="btn ${TEST_MODE?"bg2":"bgh"}" style="width:auto;padding:5px 12px;font-size:12px" onclick="toggleTest()">${TEST_MODE?"🧪 Test ON":"🧪 Test"}</button></div>`;
-o+=`<div class="st">${[["points","🎯 Puntos"],["results","📝 Resultados"],["realspecials","🏅 Especiales"],["players","👥 Jugadores"]].map(([k,l])=>`<button class="stb ${S.adminTab===k?"a":""}" onclick="S.adminTab='${k}';render()">${l}</button>`).join("")}</div>`;
+let o=`<div style="padding:12px 16px 30px"><div style="display:flex;justify-content:space-between;gap:4px;margin-bottom:8px;flex-wrap:wrap"><button class="btn bgh" style="width:auto;padding:5px 10px;font-size:11px" onclick="doRefresh()">🔄</button><button class="btn ${TEST_MODE?"bg2":"bgh"}" style="width:auto;padding:5px 10px;font-size:11px" onclick="toggleTest()">${TEST_MODE?"🧪 Test ON":"🧪 Bloqueo"}</button><button class="btn bgh" style="width:auto;padding:5px 10px;font-size:11px" onclick="checkApi()">📡 API</button><button class="btn bgl" style="width:auto;padding:5px 10px;font-size:11px" onclick="runApiTest()">🧪 Cargar 2022</button><button class="btn bgh" style="width:auto;padding:5px 10px;font-size:11px;color:var(--rd)" onclick="if(confirm('¿Borrar todos los resultados?'))clearTest()">🗑️</button></div>`;
+o+=`<div class="st">${[["points","🎯 Puntos"],["results","📝 Grupos"],["koresults","🏆 Eliminatorias"],["realspecials","🏅 Especiales"],["players","👥 Jugadores"]].map(([k,l])=>`<button class="stb ${S.adminTab===k?"a":""}" onclick="S.adminTab='${k}';render()">${l}</button>`).join("")}</div>`;
 
 if(S.adminTab==="points"){
 o+=`<div class="cd"><div style="font-size:14px;font-weight:800;margin-bottom:10px">⚽ Por partido</div>`;
@@ -309,6 +332,14 @@ o+=`<div class="cd" style="padding:10px"><div style="font-size:12px;color:var(--
 o+=`<div class="gg">${Object.keys(GROUPS).map(gr=>`<button class="gb ${gr===g?"ga":""}" onclick="S.adminGr='${gr}';render()">${gr}</button>`).join("")}</div>`;
 GM[g].forEach((match,i)=>{const k=`${g}-${i}`,m=(S.results.matches||{})[k]||{h:"",a:""};
 o+=`<div class="mr rl"><div class="tl r"><span class="n">${match[0]}</span>${flag(match[0])}</div><input class="sci gld" type="number" min="0" max="20" value="${m.h}" onchange="setRes('${k}','h',this.value)"><span style="color:var(--t3);font-weight:800;font-size:11px">vs</span><input class="sci gld" type="number" min="0" max="20" value="${m.a}" onchange="setRes('${k}','a',this.value)"><div class="tl">${flag(match[1])}<span class="n">${match[1]}</span></div></div>`;});}
+
+if(S.adminTab==="koresults"){
+o+=`<div class="cd" style="padding:10px"><div style="font-size:12px;color:var(--t2)">🏆 Resultados de eliminatorias. Los cruces se arman solos desde los grupos. En empates al 120', elegí quién ganó por penales.</div></div>`;
+if(typeof renderKoAdmin==="function"){
+  o+=renderKoAdmin(S,flag,setKoRes,setKoPen);
+} else {
+  o+=`<div class="cd" style="text-align:center;color:var(--t3)">Cargando...</div>`;
+}}
 
 if(S.adminTab==="realspecials"){
 o+=`<div class="cd" style="padding:10px"><div style="font-size:12px;color:var(--t2)">🏅 Datos reales</div></div>`;
