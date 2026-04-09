@@ -18,6 +18,7 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="api.js"></script>
 <script src="knockout.js"></script>
+<script src="groups.js"></script>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -100,7 +101,10 @@ const SPECIALS=[
   {key:"gol_torneo",label:"Total goles torneo",icon:"📊",type:"number"},
   {key:"partido_mas_goles",label:"Partido con más goles (grupos)",icon:"🔥",type:"match"},
 ];
-const DP={resultado:3,goles_equipo:1,exacto:5,campeon:20,subcampeon:12,tercero:8,goleador:15,goles_goleador:10,mas_goleador:8,menos_recibe:8,mas_goleado:8,menos_goles:8,ultimo:8,decepcion:6,sorpresa:6,mvp:12,mejor_arq:10,mejor_joven:10,gol_torneo:10,partido_mas_goles:5};
+const DP={resultado:3,goles_equipo:1,exacto:5,ko_multi:1.5,campeon:20,subcampeon:12,tercero:8,goleador:15,goles_goleador:10,mas_goleador:8,menos_recibe:8,mas_goleado:8,menos_goles:8,ultimo:8,decepcion:6,sorpresa:6,mvp:12,mejor_arq:10,mejor_joven:10,gol_torneo:10,partido_mas_goles:5};
+// Specials lock when the World Cup starts (first match kickoff)
+const SPECIALS_LOCK="2026-06-11T19:00Z";
+function specialsLocked(){if(TEST_MODE)return true;return new Date()>=new Date(SPECIALS_LOCK);}
 const AH="7d93823faecc8df64da2d16c6de6c8ee54fae1fec2278efcede48d7a0ed00c04";
 async function sha256(t){const d=new TextEncoder().encode(t);const b=await crypto.subtle.digest("SHA-256",d);return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,"0")).join("");}
 function emptyP(){const p={matches:{},specials:{},knockout:{}};Object.entries(GM).forEach(([g,ms])=>ms.forEach((_,i)=>{p.matches[`${g}-${i}`]={h:"",a:""};}));if(typeof emptyKoPreds==="function")p.knockout=emptyKoPreds();return p;}
@@ -122,7 +126,9 @@ function calcTotalPts(pd){
   const gp=calcPts(pd);
   if(typeof calcKoPts==="function"){
     const kp=calcKoPts(pd.knockout,S.results.knockout,S.config.points);
-    return{total:gp.total+kp.total,det:{e:gp.det.e+kp.det.e,r:gp.det.r+kp.det.r,g:gp.det.g+kp.det.g}};
+    const multi=S.config.points.ko_multi||1;
+    const koTotal=Math.round(kp.total*multi);
+    return{total:gp.total+koTotal,det:{e:gp.det.e+kp.det.e,r:gp.det.r+kp.det.r,g:gp.det.g+kp.det.g}};
   }
   return gp;
 }
@@ -165,14 +171,46 @@ S.user={name,isAdmin:false};S.screen="play";render();}
 async function doAdminLogin(){const p=document.getElementById("adminPassIn")?.value||"";const h=await sha256(p);if(h===AH){S.user={name:"Admin",isAdmin:true};S.screen="admin";S.showAdmin=false;await loadAll();render();}else toast("❌ Contraseña incorrecta");}
 
 async function setScore(k,si,v){if(isLocked(k))return;S.players[S.user.name].matches[k][si]=v;await dbSet("prode-players",S.players);render();}
-async function setSpec(k,v){S.players[S.user.name].specials[k]=v;await dbSet("prode-players",S.players);render();}
-async function setPt(k,v){S.config.points[k]=parseInt(v)||0;await dbSet("prode-config",S.config);render();}
+async function setSpec(k,v){if(specialsLocked()){toast("🔒 Especiales bloqueadas — el mundial ya empezó");return;}S.players[S.user.name].specials[k]=v;await dbSet("prode-players",S.players);render();}
+async function setPt(k,v){S.config.points[k]=parseFloat(v)||0;await dbSet("prode-config",S.config);render();}
 async function setRes(k,si,v){if(!S.results.matches[k])S.results.matches[k]={h:"",a:""};S.results.matches[k][si]=v;await dbSet("prode-results",S.results);render();}
 async function setRSp(k,v){if(!S.results.specials)S.results.specials={};S.results.specials[k]=v;await dbSet("prode-results",S.results);render();}
 async function setKoScore(id,si,v){if(!S.players[S.user.name].knockout)S.players[S.user.name].knockout={};if(!S.players[S.user.name].knockout[id])S.players[S.user.name].knockout[id]={h:"",a:""};S.players[S.user.name].knockout[id][si]=v;await dbSet("prode-players",S.players);render();}
 async function setKoRes(id,si,v){if(!S.results.knockout)S.results.knockout={};if(!S.results.knockout[id])S.results.knockout[id]={h:"",a:""};S.results.knockout[id][si]=v;await dbSet("prode-results",S.results);render();}
 async function setKoPen(id,who){if(!S.results.knockout)S.results.knockout={};if(!S.results.knockout[id])S.results.knockout[id]={h:"",a:""};S.results.knockout[id].pen=who;await dbSet("prode-results",S.results);render();}
 async function delPlayer(n){delete S.players[n];await dbSet("prode-players",S.players);toast("Borrado: "+n);}
+// Group handlers
+async function createGroup(){
+  const name=document.getElementById("grpName")?.value?.trim();
+  const code=(document.getElementById("grpCode")?.value||"").trim().toUpperCase();
+  const prize=document.getElementById("grpPrize")?.value?.trim()||"";
+  if(!name||!code||code.length<3){toast("❌ Nombre y código (mín 3 letras) requeridos");return;}
+  if(!S.config.groups)S.config.groups={};
+  if(S.config.groups[code]){toast("❌ Ese código ya existe");return;}
+  S.config.groups[code]={name,code,prize};
+  await dbSet("prode-config",S.config);toast("✅ Grupo "+code+" creado");render();
+}
+async function deleteGroup(code){
+  if(!S.config.groups)return;delete S.config.groups[code];
+  // Remove from all players
+  Object.values(S.players).forEach(p=>{if(p.groups)p.groups=p.groups.filter(g=>g!==code);});
+  await dbSet("prode-config",S.config);await dbSet("prode-players",S.players);toast("Grupo borrado");render();
+}
+async function joinGroup(){
+  const code=(document.getElementById("joinCode")?.value||"").trim().toUpperCase();
+  if(!code){toast("❌ Poné un código");return;}
+  const groups=S.config.groups||{};
+  if(!groups[code]){toast("❌ No existe ese grupo");return;}
+  if(!S.players[S.user.name].groups)S.players[S.user.name].groups=[];
+  if(S.players[S.user.name].groups.includes(code)){toast("Ya estás en ese grupo");return;}
+  S.players[S.user.name].groups.push(code);
+  await dbSet("prode-players",S.players);toast("✅ Te uniste a "+groups[code].name);render();
+}
+async function leaveGroup(code){
+  if(!S.players[S.user.name].groups)return;
+  S.players[S.user.name].groups=S.players[S.user.name].groups.filter(g=>g!==code);
+  await dbSet("prode-players",S.players);toast("Saliste del grupo");render();
+}
 async function doRefresh(){await loadAll();toast("🔄 Actualizado");}
 function go(s){S.screen=s;S.viewPlayer=null;if(s==="ranking"||s==="admin")loadAll().then(render);else render();}
 function toggleTest(){TEST_MODE=!TEST_MODE;toast(TEST_MODE?"🧪 Modo test ON: todos los partidos bloqueados":"✅ Modo test OFF");render();}
@@ -235,7 +273,7 @@ let o=`<div style="padding:12px 16px"><div class="cd" style="margin-bottom:0"><d
 
 if(pend>0)o+=`<div style="padding:0 16px"><div class="warn">⚠️ Tenés ${pend} partido${pend>1?"s":""} sin completar que se juega${pend>1?"n":""} en las próximas 24hs</div></div>`;
 
-o+=`<div style="display:flex;gap:4px;padding:0 16px 10px">${[["groups","⚽ Grupos"],["knockout","🏆 Eliminatorias"],["specials","🏅 Especiales"]].map(([k,l])=>`<button class="stb ${S.playTab===k?"a":""}" onclick="S.playTab='${k}';render()">${l}</button>`).join("")}</div><div style="padding:0 16px">`;
+o+=`<div style="display:flex;gap:4px;padding:0 16px 10px;overflow-x:auto">${[["groups","⚽ Grupos"],["knockout","🏆 Elim."],["specials","🏅 Especiales"],["mygroups","👥 Mis Grupos"]].map(([k,l])=>`<button class="stb ${S.playTab===k?"a":""}" onclick="S.playTab='${k}';render()" style="font-size:11px">${l}</button>`).join("")}</div><div style="padding:0 16px">`;
 
 if(S.playTab==="groups"){
 o+=`<div class="gg">${Object.keys(GROUPS).map(gr=>`<button class="gb ${gr===g?"ac":gd(gr)?"dn":""}" onclick="S.ag='${gr}';render()">${gr}${gd(gr)?"✓":""}</button>`).join("")}</div>`;
@@ -266,17 +304,25 @@ if(typeof renderKoPlay==="function"){
 }}
 
 if(S.playTab==="specials"){
-o+=`<div class="cd" style="padding:10px"><div style="font-size:12px;color:var(--t2)">💡 Dan muchos puntos. ¡No te las saltees!</div></div>`;
+const sLock=specialsLocked();
+o+=`<div class="cd" style="padding:10px"><div style="font-size:12px;color:${sLock?"var(--rd)":"var(--t2))"}">${sLock?"🔒 Predicciones bloqueadas — el mundial ya empezó":"💡 Dan muchos puntos. Se bloquean cuando arranca el mundial."}</div></div>`;
 SPECIALS.forEach(cat=>{
   const val=pd.specials[cat.key]||"",isCust=cat.type==="scorer"&&val.startsWith("Otro:"),selV=isCust?"Otro":val;
-  o+=`<div class="cd" style="padding:12px;margin-bottom:8px"><div style="font-size:13px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px"><span>${cat.icon}</span> ${cat.label}<span style="margin-left:auto;font-size:11px;color:var(--gd);font-weight:800">+${S.config.points[cat.key]||0}</span></div>`;
-  if(cat.type==="team")o+=`<select class="sel" onchange="setSpec('${cat.key}',this.value)">${tOpts(val)}</select>`;
-  else if(cat.type==="scorer"){o+=`<select class="sel" onchange="if(this.value==='Otro')setSpec('${cat.key}','Otro:');else setSpec('${cat.key}',this.value)">${scOpts(selV)}</select>`;
-    if(selV==="Otro")o+=`<input class="inp" style="margin-top:8px" value="${isCust?val.replace("Otro:","").trim():""}" placeholder="Nombre..." onchange="setSpec('${cat.key}','Otro: '+this.value)">`;}
-  else if(cat.type==="match")o+=`<select class="sel" onchange="setSpec('${cat.key}',this.value)">${mOpts(val)}</select>`;
-  else if(cat.type==="number")o+=`<input class="inp" type="number" min="0" value="${val}" placeholder="${cat.key==="gol_torneo"?"Ej: 172":"Ej: 8"}" onchange="setSpec('${cat.key}',this.value)">`;
-  else o+=`<input class="inp" value="${val}" placeholder="Tu predicción..." onchange="setSpec('${cat.key}',this.value)">`;
+  o+=`<div class="cd" style="padding:12px;margin-bottom:8px${sLock?";opacity:.6":""}"><div style="font-size:13px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px"><span>${cat.icon}</span> ${cat.label}<span style="margin-left:auto;font-size:11px;color:var(--gd);font-weight:800">+${S.config.points[cat.key]||0}</span></div>`;
+  if(cat.type==="team")o+=`<select class="sel" ${sLock?"disabled":""} onchange="setSpec('${cat.key}',this.value)">${tOpts(val)}</select>`;
+  else if(cat.type==="scorer"){o+=`<select class="sel" ${sLock?"disabled":""} onchange="if(this.value==='Otro')setSpec('${cat.key}','Otro:');else setSpec('${cat.key}',this.value)">${scOpts(selV)}</select>`;
+    if(selV==="Otro")o+=`<input class="inp" style="margin-top:8px" ${sLock?"disabled":""} value="${isCust?val.replace("Otro:","").trim():""}" placeholder="Nombre..." onchange="setSpec('${cat.key}','Otro: '+this.value)">`;}
+  else if(cat.type==="match")o+=`<select class="sel" ${sLock?"disabled":""} onchange="setSpec('${cat.key}',this.value)">${mOpts(val)}</select>`;
+  else if(cat.type==="number")o+=`<input class="inp" type="number" min="0" ${sLock?"disabled":""} value="${val}" placeholder="${cat.key==="gol_torneo"?"Ej: 172":"Ej: 8"}" onchange="setSpec('${cat.key}',this.value)">`;
+  else o+=`<input class="inp" ${sLock?"disabled":""} value="${val}" placeholder="Tu predicción..." onchange="setSpec('${cat.key}',this.value)">`;
   o+=`</div>`;});}
+
+if(S.playTab==="mygroups"){
+if(typeof renderJoinGroup==="function"){
+  o+=renderJoinGroup(S,S.user.name,joinGroup,leaveGroup);
+} else {
+  o+=`<div class="cd" style="text-align:center;color:var(--t3)">Cargando...</div>`;
+}}}
 o+=`</div>`;return o;}
 
 // ═══ RANKING ═══
@@ -303,6 +349,13 @@ const isMe=S.user&&r.n===S.user.name,bg=pos===0&&hasR?"background:linear-gradien
 const pC=pos<3&&hasR?["background:var(--gd);color:#000","background:#aaa;color:#000","background:#cd7f32;color:#000"][pos]:"background:var(--c2);color:var(--t3)";
 o+=`<div class="cd" style="padding:14px;cursor:pointer;${bg}" onclick="S.viewPlayer='${r.n}';render()"><div style="display:flex;align-items:center;gap:10px"><div style="width:32px;height:32px;border-radius:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:900;${pC}">${pos<3&&hasR?mds[pos]:pos+1}</div><div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.n}${isMe?' <span style="font-size:11px;color:var(--pl)">(vos)</span>':""}</div><div style="font-size:11px;color:var(--t3)">${r.c}% · ${r.p.det.e}🎯 ${r.p.det.r}✓ ${r.p.det.g}⚽</div></div><div style="text-align:right"><div style="font-size:22px;font-weight:900;color:${hasR?"var(--gd)":"var(--t3)"}">${r.p.total}</div><div style="font-size:10px;color:var(--t3)">pts →</div></div></div></div>`;});}
 
+// Group rankings
+if(typeof renderGroupRankings==="function"&&S.user&&!S.user.isAdmin){
+const myGrps=S.players[S.user.name]?.groups||[];
+const calcFn=typeof calcTotalPts==="function"?calcTotalPts:calcPts;
+if(myGrps.length)o+=renderGroupRankings(S,myGrps,calcFn,comp,flag);
+}
+
 // Expandable full points
 o+=`<div class="cd" style="margin-top:4px"><button style="background:none;border:none;color:var(--tx);font-size:13px;font-weight:800;cursor:pointer;padding:0;display:flex;align-items:center;gap:6px;width:100%" onclick="S.showAllPts=!S.showAllPts;render()">📋 Puntos ${S.showAllPts?"▲":"▼"}</button>`;
 if(S.showAllPts){let sT=0;o+=`<div style="margin-top:12px"><div style="font-size:12px;font-weight:800;color:var(--pl);margin-bottom:6px;border-bottom:1px solid var(--bd);padding-bottom:4px">⚽ Por partido (×72)</div>`;
@@ -317,13 +370,16 @@ o+=`</div></div>`;return o;}
 function rAdmin(){
 const g=S.adminGr,pts=S.config.points;
 let o=`<div style="padding:12px 16px 30px"><div style="display:flex;justify-content:space-between;gap:4px;margin-bottom:8px;flex-wrap:wrap"><button class="btn bgh" style="width:auto;padding:5px 10px;font-size:11px" onclick="doRefresh()">🔄</button><button class="btn ${TEST_MODE?"bg2":"bgh"}" style="width:auto;padding:5px 10px;font-size:11px" onclick="toggleTest()">${TEST_MODE?"🧪 Test ON":"🧪 Bloqueo"}</button><button class="btn bgh" style="width:auto;padding:5px 10px;font-size:11px" onclick="checkApi()">📡 API</button><button class="btn bgl" style="width:auto;padding:5px 10px;font-size:11px" onclick="runApiTest()">🧪 Cargar 2022</button><button class="btn bgh" style="width:auto;padding:5px 10px;font-size:11px;color:var(--rd)" onclick="if(confirm('¿Borrar todos los resultados?'))clearTest()">🗑️</button></div>`;
-o+=`<div class="st">${[["points","🎯 Puntos"],["results","📝 Grupos"],["koresults","🏆 Eliminatorias"],["realspecials","🏅 Especiales"],["players","👥 Jugadores"]].map(([k,l])=>`<button class="stb ${S.adminTab===k?"a":""}" onclick="S.adminTab='${k}';render()">${l}</button>`).join("")}</div>`;
+o+=`<div class="st">${[["points","🎯 Puntos"],["results","📝 Grupos"],["koresults","🏆 Elim."],["realspecials","🏅 Especiales"],["friendgroups","👥 Grupos"],["players","👤 Jugadores"]].map(([k,l])=>`<button class="stb ${S.adminTab===k?"a":""}" onclick="S.adminTab='${k}';render()" style="font-size:11px">${l}</button>`).join("")}</div>`;
 
 if(S.adminTab==="points"){
 o+=`<div class="cd"><div style="font-size:14px;font-weight:800;margin-bottom:10px">⚽ Por partido</div>`;
 [{k:"resultado",l:"Resultado (V/E/D)"},{k:"goles_equipo",l:"Goles 1 equipo"},{k:"exacto",l:"Exacto"}].forEach(x=>{
 o+=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span style="font-size:13px;font-weight:700">${x.l}</span><div style="display:flex;align-items:center;gap:4px"><input type="number" min="0" value="${pts[x.k]}" onchange="setPt('${x.k}',this.value)" style="width:50px;height:32px;text-align:center;font-size:15px;font-weight:800;border-radius:8px;border:2px solid var(--bd);background:var(--bg);color:var(--gd);outline:none"><span style="font-size:11px;color:var(--t3)">pts</span></div></div>`;});
-o+=`</div><div class="cd"><div style="font-size:14px;font-weight:800;margin-bottom:10px">🏅 Especiales</div>`;
+o+=`</div><div class="cd"><div style="font-size:14px;font-weight:800;margin-bottom:10px">🏆 Eliminatorias — Multiplicador</div>
+<div style="font-size:12px;color:var(--t2);margin-bottom:8px">Los puntos de partidos de eliminatorias se multiplican por este valor. Ej: x1.5 = un exacto de grupos vale 5, en eliminatorias vale 7.5</div>
+<div style="display:flex;gap:6px;align-items:center">${[1,1.5,2,3].map(v=>`<button class="btn ${(pts.ko_multi||1.5)===v?"bgl":"bgh"}" style="width:auto;padding:6px 14px;font-size:13px;font-weight:800" onclick="setPt('ko_multi',${v})">x${v}</button>`).join("")}</div>
+</div><div class="cd"><div style="font-size:14px;font-weight:800;margin-bottom:10px">🏅 Especiales</div>`;
 SPECIALS.forEach(s=>{o+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(37,37,80,.1)"><span style="font-size:12px">${s.icon} ${s.label}</span><div style="display:flex;align-items:center;gap:4px"><input type="number" min="0" value="${pts[s.key]||0}" onchange="setPt('${s.key}',this.value)" style="width:50px;height:28px;text-align:center;font-size:13px;font-weight:800;border-radius:8px;border:2px solid var(--bd);background:var(--bg);color:var(--gd);outline:none"></div></div>`;});
 o+=`</div>`;}
 
@@ -349,6 +405,13 @@ if(cat.type==="team")o+=`<select class="sel" style="border-color:rgba(245,158,11
 else if(cat.type==="match")o+=`<select class="sel" style="border-color:rgba(245,158,11,.35);color:var(--gd)" onchange="setRSp('${cat.key}',this.value)">${mOpts(val)}</select>`;
 else o+=`<input class="inp" type="${cat.type==="number"?"number":"text"}" value="${val}" placeholder="..." style="border-color:rgba(245,158,11,.35);color:var(--gd)" onchange="setRSp('${cat.key}',this.value)">`;
 o+=`</div>`;});}
+
+if(S.adminTab==="friendgroups"){
+if(typeof renderGroupsAdmin==="function"){
+  o+=renderGroupsAdmin(S,createGroup,deleteGroup);
+} else {
+  o+=`<div class="cd" style="text-align:center;color:var(--t3)">Cargando...</div>`;
+}}
 
 if(S.adminTab==="players"){
 o+=`<div class="cd" style="padding:10px"><div style="font-size:12px;color:var(--t2)">👥 Jugadores</div></div>`;
