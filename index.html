@@ -305,7 +305,7 @@ if(typeof renderKoPlay==="function"){
 
 if(S.playTab==="specials"){
 const sLock=specialsLocked();
-o+=`<div class="cd" style="padding:10px"><div style="font-size:12px;color:${sLock?"var(--rd)":"var(--t2))"}">${sLock?"🔒 Predicciones bloqueadas — el mundial ya empezó":"💡 Dan muchos puntos. Se bloquean cuando arranca el mundial."}</div></div>`;
+o+=`<div class="cd" style="padding:10px"><div style="font-size:12px;color:${sLock?"var(--rd)":"var(--t2)"}">${sLock?"🔒 Predicciones bloqueadas — el mundial ya empezó":"💡 Dan muchos puntos. Se bloquean cuando arranca el mundial."}</div></div>`;
 SPECIALS.forEach(cat=>{
   const val=pd.specials[cat.key]||"",isCust=cat.type==="scorer"&&val.startsWith("Otro:"),selV=isCust?"Otro":val;
   o+=`<div class="cd" style="padding:12px;margin-bottom:8px${sLock?";opacity:.6":""}"><div style="font-size:13px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px"><span>${cat.icon}</span> ${cat.label}<span style="margin-left:auto;font-size:11px;color:var(--gd);font-weight:800">+${S.config.points[cat.key]||0}</span></div>`;
