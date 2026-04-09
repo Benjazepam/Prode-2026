@@ -319,7 +319,12 @@ function renderKoPlay(S, pd, flag, isKoLocked, setKoScore) {
       // Show real result if available
       const real = (S.results.knockout||{})[m.id];
       if (real && real.h !== "" && real.a !== "") {
-        o += `<div style="font-size:11px;text-align:center;color:var(--gd);font-weight:700;margin-top:2px">Resultado: ${real.h} - ${real.a}${real.pen?" (pen: "+real.pen+")":""}</div>`;
+        let penText = "";
+        if (real.pen) {
+          const penWinner = real.pen === "h" ? t.home : t.away;
+          penText = ` (pen: ${penWinner})`;
+        }
+        o += `<div style="font-size:11px;text-align:center;color:var(--gd);font-weight:700;margin-top:2px">Resultado: ${real.h} - ${real.a}${penText}</div>`;
       }
       
       // Peek at others if locked
