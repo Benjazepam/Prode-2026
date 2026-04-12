@@ -18,7 +18,8 @@ function renderGroupsAdmin(S, createGroup, deleteGroup) {
   o += `<div style="font-size:13px;font-weight:700;margin-bottom:8px">➕ Crear grupo nuevo</div>`;
   o += `<input class="inp" id="grpName" placeholder="Nombre (ej: Amigos del fútbol)" style="margin-bottom:6px">`;
   o += `<input class="inp" id="grpCode" placeholder="Código 3-6 letras (ej: AMIG)" style="margin-bottom:6px;text-transform:uppercase" maxlength="6">`;
-  o += `<input class="inp" id="grpPrize" placeholder="Premio (ej: El último paga la pizza)" style="margin-bottom:8px">`;
+  o += `<input class="inp" id="grpPrize" placeholder="🏆 Premio al 1° (ej: No paga la cena)" style="margin-bottom:6px">`;
+  o += `<input class="inp" id="grpPrizeLast" placeholder="💀 Castigo al último (ej: Paga la pizza)" style="margin-bottom:8px">`;
   o += `<button class="btn bp" onclick="createGroup()">Crear grupo</button>`;
   o += `</div>`;
 
@@ -30,7 +31,8 @@ function renderGroupsAdmin(S, createGroup, deleteGroup) {
     o += `<div>`;
     o += `<div style="font-size:14px;font-weight:700">${grp.name}</div>`;
     o += `<div style="font-size:12px;color:var(--t3)">Código: <b style="color:var(--pl)">${code}</b> · ${memberCount} miembro${memberCount!==1?"s":""}</div>`;
-    if (grp.prize) o += `<div style="font-size:11px;color:var(--gd);margin-top:2px">🏆 ${grp.prize}</div>`;
+    if (grp.prize) o += `<div style="font-size:11px;color:var(--gd);margin-top:2px">🏆 1°: ${grp.prize}</div>`;
+    if (grp.prize_last) o += `<div style="font-size:11px;color:var(--rd);margin-top:1px">💀 Último: ${grp.prize_last}</div>`;
     o += `</div>`;
     o += `<button style="background:rgba(239,68,68,.12);border:none;border-radius:8px;padding:6px 10px;color:var(--rd);font-size:11px;font-weight:700;cursor:pointer" onclick="if(confirm('¿Borrar grupo ${code}?'))deleteGroup('${code}')">🗑️</button>`;
     o += `</div>`;
@@ -70,6 +72,7 @@ function renderJoinGroup(S, playerName, joinGroup, leaveGroup) {
       o += `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(37,37,80,.1)">`;
       o += `<div><span style="font-size:12px;font-weight:600">${grp.name}</span>`;
       if (grp.prize) o += `<span style="font-size:10px;color:var(--gd);margin-left:6px">🏆 ${grp.prize}</span>`;
+      if (grp.prize_last) o += `<span style="font-size:10px;color:var(--rd);margin-left:4px">💀 ${grp.prize_last}</span>`;
       o += `</div>`;
       o += `<button style="background:none;border:none;color:var(--rd);font-size:11px;cursor:pointer;font-weight:600" onclick="leaveGroup('${code}')">Salir</button>`;
       o += `</div>`;
