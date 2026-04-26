@@ -195,7 +195,9 @@ function resolveTeam(src, standings, bestThirds, realKnockout) {
     const grp = posMatch[2];
     const st = standings[grp];
     if (!st || !st[pos]) return null;
-    if (st[pos].mp < 3) return null; // group not finished
+    // Show provisional position even if group not finished (mp < 3)
+    // but only if at least 1 match has been played
+    if (st[pos].mp < 1) return null;
     return st[pos].name;
   }
   
@@ -393,5 +395,68 @@ function renderKoAdmin(S, flag, setKoRes, setKoPen) {
     o += `</div>`;
   });
   
+  return o;
+}
+
+// ═══ RENDER GROUP STANDINGS TABLE ═══
+function renderStandingsTab(S, flag) {
+  const standings = computeGroupStandings(GM, S.results.matches);
+  const sg = S.standingsGr || "A";
+  let o = "";
+  o += `<div class="gg">${Object.keys(GROUPS).map(g =>
+    `<button class="gb ${g===sg?"ga":""}" onclick="S.standingsGr='${g}';render()">${g}</button>`
+  ).join("")}</div>`;
+  const st = standings[sg] || [];
+  if (!st.length || st.every(t => t.mp === 0)) {
+    o += `<div class="cd" style="text-align:center;color:var(--t3);padding:20px">⏳ Sin partidos jugados en este grupo</div>`;
+    return o;
+  }
+  o += `<div class="cd" style="padding:10px;overflow-x:auto">`;
+  o += `<table style="width:100%;border-collapse:collapse;font-size:11px">`;
+  o += `<tr style="color:var(--t3);border-bottom:1px solid var(--bd)"><th style="text-align:left;padding:4px 2px;font-weight:800">#</th><th style="text-align:left;padding:4px 2px;font-weight:800">Equipo</th><th style="padding:4px 2px;font-weight:800">PJ</th><th style="padding:4px 2px;font-weight:800">G</th><th style="padding:4px 2px;font-weight:800">E</th><th style="padding:4px 2px;font-weight:800">P</th><th style="padding:4px 2px;font-weight:800">GF</th><th style="padding:4px 2px;font-weight:800">GC</th><th style="padding:4px 2px;font-weight:800">DG</th><th style="padding:4px 2px;font-weight:800;color:var(--gd)">Pts</th></tr>`;
+  st.forEach((t, i) => {
+    const bgC = i < 2 ? "rgba(16,185,129,.06)" : i === 2 ? "rgba(245,158,11,.06)" : "transparent";
+    const tag = i < 2 ? "🟢" : i === 2 ? "🟡" : "";
+    o += `<tr style="border-bottom:1px solid rgba(37,37,80,.1);background:${bgC}"><td style="padding:5px 2px;font-weight:800;color:var(--t3)">${i+1}</td><td style="padding:5px 2px;font-weight:700;white-space:nowrap">${flag(t.name)} ${t.name} ${tag}</td><td style="padding:5px 2px;text-align:center;color:var(--t2)">${t.mp}</td><td style="padding:5px 2px;text-align:center;color:var(--gl)">${t.w}</td><td style="padding:5px 2px;text-align:center;color:var(--t2)">${t.d}</td><td style="padding:5px 2px;text-align:center;color:var(--rd)">${t.l}</td><td style="padding:5px 2px;text-align:center;color:var(--t2)">${t.gf}</td><td style="padding:5px 2px;text-align:center;color:var(--t2)">${t.ga}</td><td style="padding:5px 2px;text-align:center;font-weight:700;color:${t.gd>0?"var(--gl)":t.gd<0?"var(--rd)":"var(--t3)"}">${t.gd>0?"+":""}${t.gd}</td><td style="padding:5px 2px;text-align:center;font-weight:900;color:var(--gd)">${t.pts}</td></tr>`;
+  });
+  o += `</table><div style="font-size:10px;color:var(--t3);margin-top:6px">🟢 Clasifica directo · 🟡 Puede clasificar como mejor 3°</div></div>`;
+  return o;
+}
+
+// ═══ RENDER TOP SCORERS (admin-managed) ═══
+function renderTopScorers(S, flag) {
+  const scorers = S.results.scorers || [];
+  let o = "";
+  if (!scorers.length) {
+    o += `<div class="cd" style="text-align:center;padding:20px"><div style="font-size:36px;margin-bottom:8px">👟</div><div style="font-size:14px;font-weight:700;color:var(--t3)">Sin goleadores cargados</div><div style="font-size:12px;color:var(--t3);margin-top:4px">El admin carga los goleadores desde el panel.</div></div>`;
+    return o;
+  }
+  const sorted = [...scorers].sort((a, b) => (b.goals||0) - (a.goals||0));
+  o += `<div class="cd" style="padding:10px">`;
+  sorted.forEach((s, i) => {
+    const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : (i+1)+".";
+    o += `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(37,37,80,.08)"><div style="width:28px;font-weight:900;font-size:${i<3?14:12}px;text-align:center">${medal}</div><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.name}</div><div style="font-size:11px;color:var(--t3)">${s.team?(flag(s.team)+' '+s.team):''}</div></div><div style="font-size:18px;font-weight:900;color:var(--gd)">${s.goals||0}</div></div>`;
+  });
+  o += `</div>`;
+  return o;
+}
+
+// ═══ RENDER SCORERS ADMIN ═══
+function renderScorersAdmin(S, flag) {
+  const scorers = S.results.scorers || [];
+  let o = `<div class="cd" style="padding:10px"><div style="font-size:12px;color:var(--t2)">👟 Cargá los goleadores del torneo.</div></div>`;
+  o += `<div class="cd" style="padding:12px"><div style="font-size:13px;font-weight:700;margin-bottom:8px">➕ Agregar goleador</div>`;
+  o += `<input class="inp" id="scrName" placeholder="Nombre del jugador" style="margin-bottom:6px">`;
+  o += `<select class="sel" id="scrTeam" style="margin-bottom:6px"><option value="">Selección...</option>${TEAMS.map(t=>`<option value="${t}">${t}</option>`).join("")}</select>`;
+  o += `<input class="inp" id="scrGoals" type="number" min="0" placeholder="Goles" style="margin-bottom:8px">`;
+  o += `<button class="btn bp" onclick="addScorer()">Agregar</button></div>`;
+  if (scorers.length) {
+    const sorted = [...scorers].sort((a, b) => (b.goals||0) - (a.goals||0));
+    o += `<div class="cd" style="padding:10px">`;
+    sorted.forEach((s, i) => {
+      o += `<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(37,37,80,.08)"><div style="flex:1;font-size:12px;font-weight:700">${s.name} ${s.team?flag(s.team):''} — <b style="color:var(--gd)">${s.goals||0}</b></div><input type="number" min="0" value="${s.goals||0}" style="width:45px;height:26px;text-align:center;font-size:12px;font-weight:800;border-radius:6px;border:1px solid var(--bd);background:var(--bg);color:var(--gd);outline:none" onchange="updateScorerGoals(${i},this.value)"><button style="background:none;border:none;color:var(--rd);font-size:11px;cursor:pointer;font-weight:700" onclick="removeScorer(${i})">✕</button></div>`;
+    });
+    o += `</div>`;
+  }
   return o;
 }
