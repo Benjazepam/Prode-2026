@@ -219,9 +219,12 @@ async function testWithQatar2022(GM, S, dbSet, onUpdate) {
 // ═══ CLEAR TEST DATA ═══
 async function clearTestResults(S, dbSet, onUpdate) {
   S.results.matches = {};
+  S.results.specials = {};
+  S.results.knockout = {};
+  S.results.scorers = [];
   await dbSet("prode-results", S.results);
   if (onUpdate) onUpdate();
-  return "🗑️ Resultados borrados";
+  return "🗑️ Todo borrado (resultados, especiales, eliminatorias, goleadores)";
 }
 
 // ═══ CHECK API STATUS ═══
