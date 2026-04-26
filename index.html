@@ -113,7 +113,7 @@ function scOpts(s){return`<option value="">Elegí...</option>${SCORERS.map(x=>`<
 function mOpts(s){return`<option value="">Elegí partido...</option>${ALL_M.map(m=>`<option value="${m.k}"${s===m.k?" selected":""}>${m.l}</option>`).join("")}`;}
 
 // ═══ STATE ═══
-let S={screen:"login",user:null,config:{points:{...DP}},players:{},results:{matches:{},specials:{},knockout:{}},playTab:"groups",ag:"A",adminTab:"points",adminGr:"A",toast:"",showAllPts:false,showAdmin:false,viewPlayer:null,koRound:"R32",adminKoRound:"R32",rankTab:"general"};
+let S={screen:"login",user:null,config:{points:{...DP}},players:{},results:{matches:{},specials:{},knockout:{}},playTab:"groups",ag:"A",adminTab:"points",adminGr:"A",toast:"",showAllPts:false,showAdmin:false,viewPlayer:null,koRound:"R32",adminKoRound:"R32",rankTab:"general",standingsGr:"A"};
 async function loadAll(){const[c,p,r]=await Promise.all([dbGet("prode-config"),dbGet("prode-players"),dbGet("prode-results")]);if(c)S.config=c;if(p)S.players=p;if(r)S.results=r;}
 function toast(m){S.toast=m;render();setTimeout(()=>{S.toast="";render();},2e3);}
 function comp(pd){if(!pd)return 0;const mF=Object.values(pd.matches||{}).filter(m=>m.h!==""&&m.a!=="").length;const sF=SPECIALS.filter(c=>(pd.specials||{})[c.key]&&pd.specials[c.key]!=="").length;return Math.round(((mF+sF)/(72+SPECIALS.length))*100);}
@@ -217,6 +217,26 @@ async function leaveGroup(code){
   await dbSet("prode-players",S.players);toast("Saliste del grupo");render();
 }
 async function doRefresh(){await loadAll();toast("🔄 Actualizado");}
+// Scorer handlers
+async function addScorer(){
+  const name=document.getElementById("scrName")?.value?.trim();
+  const team=document.getElementById("scrTeam")?.value||"";
+  const goals=parseInt(document.getElementById("scrGoals")?.value)||0;
+  if(!name){toast("❌ Poné un nombre");return;}
+  if(!S.results.scorers)S.results.scorers=[];
+  S.results.scorers.push({name,team,goals});
+  await dbSet("prode-results",S.results);toast("✅ "+name+" agregado");render();
+}
+async function updateScorerGoals(idx,v){
+  if(!S.results.scorers||!S.results.scorers[idx])return;
+  S.results.scorers[idx].goals=parseInt(v)||0;
+  await dbSet("prode-results",S.results);render();
+}
+async function removeScorer(idx){
+  if(!S.results.scorers)return;
+  S.results.scorers.splice(idx,1);
+  await dbSet("prode-results",S.results);toast("Borrado");render();
+}
 function go(s){S.screen=s;S.viewPlayer=null;if(s==="ranking"||s==="admin")loadAll().then(render);else render();}
 function toggleTest(){TEST_MODE=!TEST_MODE;toast(TEST_MODE?"🧪 Modo test ON: todos los partidos bloqueados":"✅ Modo test OFF");render();}
 
@@ -278,7 +298,7 @@ let o=`<div style="padding:12px 16px"><div class="cd" style="margin-bottom:0"><d
 
 if(pend>0)o+=`<div style="padding:0 16px"><div class="warn">⚠️ Tenés ${pend} partido${pend>1?"s":""} sin completar que se juega${pend>1?"n":""} en las próximas 24hs</div></div>`;
 
-o+=`<div style="display:flex;gap:4px;padding:0 16px 10px;overflow-x:auto">${[["groups","⚽ Grupos"],["knockout","🏆 Elim."],["specials","🏅 Especiales"],["mygroups","👥 Mis Grupos"]].map(([k,l])=>`<button class="stb ${S.playTab===k?"a":""}" onclick="S.playTab='${k}';render()" style="font-size:11px">${l}</button>`).join("")}</div><div style="padding:0 16px">`;
+o+=`<div style="display:flex;gap:4px;padding:0 16px 10px;overflow-x:auto">${[["groups","⚽ Grupos"],["standings","📊 Tablas"],["knockout","🏆 Elim."],["scorers","👟 Golea."],["specials","🏅 Especiales"],["mygroups","👥 Grupos"]].map(([k,l])=>`<button class="stb ${S.playTab===k?"a":""}" onclick="S.playTab='${k}';render()" style="font-size:11px">${l}</button>`).join("")}</div><div style="padding:0 16px">`;
 
 if(S.playTab==="groups"){
 o+=`<div class="gg">${Object.keys(GROUPS).map(gr=>`<button class="gb ${gr===g?"ac":gd(gr)?"dn":""}" onclick="S.ag='${gr}';render()">${gr}${gd(gr)?"✓":""}</button>`).join("")}</div>`;
@@ -301,11 +321,25 @@ if(g!=="A")o+=`<button class="btn bgh" style="flex:1;font-size:13px" onclick="S.
 if(g!=="L")o+=`<button class="btn bp" style="flex:1;font-size:13px" onclick="S.ag='${String.fromCharCode(g.charCodeAt(0)+1)}';render()">${String.fromCharCode(g.charCodeAt(0)+1)} →</button>`;
 o+=`</div>`;}
 
+if(S.playTab==="standings"){
+if(typeof renderStandingsTab==="function"){
+  o+=renderStandingsTab(S,flag);
+} else {
+  o+=`<div class="cd" style="text-align:center;color:var(--t3)">Cargando...</div>`;
+}}
+
 if(S.playTab==="knockout"){
 if(typeof renderKoPlay==="function"){
   o+=renderKoPlay(S,pd,flag,isKoLocked,setKoScore);
 } else {
   o+=`<div class="cd" style="text-align:center;color:var(--t3)">Cargando eliminatorias...</div>`;
+}}
+
+if(S.playTab==="scorers"){
+if(typeof renderTopScorers==="function"){
+  o+=renderTopScorers(S,flag);
+} else {
+  o+=`<div class="cd" style="text-align:center;color:var(--t3)">Cargando...</div>`;
 }}
 
 if(S.playTab==="specials"){
@@ -383,7 +417,7 @@ o+=`</div></div>`;return o;}
 function rAdmin(){
 const g=S.adminGr,pts=S.config.points;
 let o=`<div style="padding:12px 16px 30px"><div style="display:flex;justify-content:space-between;gap:4px;margin-bottom:8px;flex-wrap:wrap"><button class="btn bgh" style="width:auto;padding:5px 10px;font-size:11px" onclick="doRefresh()">🔄</button><button class="btn ${TEST_MODE?"bg2":"bgh"}" style="width:auto;padding:5px 10px;font-size:11px" onclick="toggleTest()">${TEST_MODE?"🧪 Test ON":"🧪 Bloqueo"}</button><button class="btn bgh" style="width:auto;padding:5px 10px;font-size:11px" onclick="checkApi()">📡 API</button><button class="btn bgl" style="width:auto;padding:5px 10px;font-size:11px" onclick="runApiTest()">🧪 Cargar 2022</button><button class="btn bgh" style="width:auto;padding:5px 10px;font-size:11px;color:var(--rd)" onclick="if(confirm('¿Borrar todos los resultados?'))clearTest()">🗑️</button></div>`;
-o+=`<div class="st">${[["points","🎯 Puntos"],["results","📝 Grupos"],["koresults","🏆 Elim."],["realspecials","🏅 Especiales"],["friendgroups","👥 Grupos"],["players","👤 Jugadores"]].map(([k,l])=>`<button class="stb ${S.adminTab===k?"a":""}" onclick="S.adminTab='${k}';render()" style="font-size:11px">${l}</button>`).join("")}</div>`;
+o+=`<div class="st">${[["points","🎯 Puntos"],["results","📝 Grupos"],["koresults","🏆 Elim."],["scorersadmin","👟 Golea."],["realspecials","🏅 Especiales"],["friendgroups","👥 Grupos"],["players","👤 Jugadores"]].map(([k,l])=>`<button class="stb ${S.adminTab===k?"a":""}" onclick="S.adminTab='${k}';render()" style="font-size:11px">${l}</button>`).join("")}</div>`;
 
 if(S.adminTab==="points"){
 o+=`<div class="cd"><div style="font-size:14px;font-weight:800;margin-bottom:10px">⚽ Por partido</div>`;
@@ -406,6 +440,13 @@ if(S.adminTab==="koresults"){
 o+=`<div class="cd" style="padding:10px"><div style="font-size:12px;color:var(--t2)">🏆 Resultados de eliminatorias. Los cruces se arman solos desde los grupos. En empates al 120', elegí quién ganó por penales.</div></div>`;
 if(typeof renderKoAdmin==="function"){
   o+=renderKoAdmin(S,flag,setKoRes,setKoPen);
+} else {
+  o+=`<div class="cd" style="text-align:center;color:var(--t3)">Cargando...</div>`;
+}}
+
+if(S.adminTab==="scorersadmin"){
+if(typeof renderScorersAdmin==="function"){
+  o+=renderScorersAdmin(S,flag);
 } else {
   o+=`<div class="cd" style="text-align:center;color:var(--t3)">Cargando...</div>`;
 }}
