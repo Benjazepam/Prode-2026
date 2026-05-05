@@ -133,7 +133,8 @@ function computeGroupStandings(GM, realMatches) {
 function bestThirdPlaced(standings) {
   const thirds = [];
   Object.entries(standings).forEach(([g, teams]) => {
-    if (teams.length >= 3 && teams[2].mp === 3) { // all 3 matches played
+    if (teams.length >= 3) {
+      // Show 3rd-placed team even provisionally (before all matches played)
       thirds.push({...teams[2], group: g});
     }
   });
@@ -195,9 +196,7 @@ function resolveTeam(src, standings, bestThirds, realKnockout) {
     const grp = posMatch[2];
     const st = standings[grp];
     if (!st || !st[pos]) return null;
-    // Show provisional position even if group not finished (mp < 3)
-    // but only if at least 1 match has been played
-    if (st[pos].mp < 1) return null;
+    // Always show current position (even before matches start)
     return st[pos].name;
   }
   
@@ -420,6 +419,20 @@ function renderStandingsTab(S, flag) {
     o += `<tr style="border-bottom:1px solid rgba(37,37,80,.1);background:${bgC}"><td style="padding:5px 2px;font-weight:800;color:var(--t3)">${i+1}</td><td style="padding:5px 2px;font-weight:700;white-space:nowrap">${flag(t.name)} ${t.name} ${tag}</td><td style="padding:5px 2px;text-align:center;color:var(--t2)">${t.mp}</td><td style="padding:5px 2px;text-align:center;color:var(--gl)">${t.w}</td><td style="padding:5px 2px;text-align:center;color:var(--t2)">${t.d}</td><td style="padding:5px 2px;text-align:center;color:var(--rd)">${t.l}</td><td style="padding:5px 2px;text-align:center;color:var(--t2)">${t.gf}</td><td style="padding:5px 2px;text-align:center;color:var(--t2)">${t.ga}</td><td style="padding:5px 2px;text-align:center;font-weight:700;color:${t.gd>0?"var(--gl)":t.gd<0?"var(--rd)":"var(--t3)"}">${t.gd>0?"+":""}${t.gd}</td><td style="padding:5px 2px;text-align:center;font-weight:900;color:var(--gd)">${t.pts}</td></tr>`;
   });
   o += `</table><div style="font-size:10px;color:var(--t3);margin-top:6px">🟢 Clasifica directo · 🟡 Puede clasificar como mejor 3°</div></div>`;
+  
+  // Best third-placed teams table
+  const bestThirds = bestThirdPlaced(standings);
+  if (bestThirds.length > 0) {
+    o += `<div class="cd" style="padding:10px;margin-top:4px"><div style="font-size:12px;font-weight:800;color:var(--gd);margin-bottom:6px">🟡 Mejores terceros</div>`;
+    o += `<table style="width:100%;border-collapse:collapse;font-size:11px">`;
+    o += `<tr style="color:var(--t3);border-bottom:1px solid var(--bd)"><th style="text-align:left;padding:3px 2px;font-weight:800">#</th><th style="text-align:left;padding:3px 2px;font-weight:800">Equipo</th><th style="padding:3px 2px;font-weight:800">Gr</th><th style="padding:3px 2px;font-weight:800">PJ</th><th style="padding:3px 2px;font-weight:800">Pts</th><th style="padding:3px 2px;font-weight:800">DG</th><th style="padding:3px 2px;font-weight:800">GF</th></tr>`;
+    bestThirds.forEach((t, i) => {
+      const qualifies = i < 8;
+      o += `<tr style="border-bottom:1px solid rgba(37,37,80,.1);background:${qualifies?"rgba(245,158,11,.06)":"transparent"}"><td style="padding:4px 2px;font-weight:800;color:var(--t3)">${i+1}</td><td style="padding:4px 2px;font-weight:700;white-space:nowrap">${flag(t.name)} ${t.name} ${qualifies?"🟡":""}</td><td style="padding:4px 2px;text-align:center;color:var(--pl);font-weight:700">${t.group}</td><td style="padding:4px 2px;text-align:center;color:var(--t2)">${t.mp}</td><td style="padding:4px 2px;text-align:center;font-weight:900;color:var(--gd)">${t.pts}</td><td style="padding:4px 2px;text-align:center;color:${t.gd>0?"var(--gl)":t.gd<0?"var(--rd)":"var(--t3)"}">${t.gd>0?"+":""}${t.gd}</td><td style="padding:4px 2px;text-align:center;color:var(--t2)">${t.gf}</td></tr>`;
+    });
+    o += `</table></div>`;
+  }
+  
   return o;
 }
 
