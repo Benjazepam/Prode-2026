@@ -406,10 +406,7 @@ function renderStandingsTab(S, flag) {
     `<button class="gb ${g===sg?"ga":""}" onclick="S.standingsGr='${g}';render()">${g}</button>`
   ).join("")}</div>`;
   const st = standings[sg] || [];
-  if (!st.length || st.every(t => t.mp === 0)) {
-    o += `<div class="cd" style="text-align:center;color:var(--t3);padding:20px">⏳ Sin partidos jugados en este grupo</div>`;
-    return o;
-  }
+  if (!st.length) { return o; }
   o += `<div class="cd" style="padding:10px;overflow-x:auto">`;
   o += `<table style="width:100%;border-collapse:collapse;font-size:11px">`;
   o += `<tr style="color:var(--t3);border-bottom:1px solid var(--bd)"><th style="text-align:left;padding:4px 2px;font-weight:800">#</th><th style="text-align:left;padding:4px 2px;font-weight:800">Equipo</th><th style="padding:4px 2px;font-weight:800">PJ</th><th style="padding:4px 2px;font-weight:800">G</th><th style="padding:4px 2px;font-weight:800">E</th><th style="padding:4px 2px;font-weight:800">P</th><th style="padding:4px 2px;font-weight:800">GF</th><th style="padding:4px 2px;font-weight:800">GC</th><th style="padding:4px 2px;font-weight:800">DG</th><th style="padding:4px 2px;font-weight:800;color:var(--gd)">Pts</th></tr>`;
@@ -423,12 +420,12 @@ function renderStandingsTab(S, flag) {
   // Best third-placed teams table
   const bestThirds = bestThirdPlaced(standings);
   if (bestThirds.length > 0) {
-    o += `<div class="cd" style="padding:10px;margin-top:4px"><div style="font-size:12px;font-weight:800;color:var(--gd);margin-bottom:6px">🟡 Mejores terceros</div>`;
+    o += `<div class="cd" style="padding:10px;margin-top:4px"><div style="font-size:12px;font-weight:800;color:var(--gd);margin-bottom:6px">🟡 Mejores terceros (clasifican 8)</div>`;
     o += `<table style="width:100%;border-collapse:collapse;font-size:11px">`;
     o += `<tr style="color:var(--t3);border-bottom:1px solid var(--bd)"><th style="text-align:left;padding:3px 2px;font-weight:800">#</th><th style="text-align:left;padding:3px 2px;font-weight:800">Equipo</th><th style="padding:3px 2px;font-weight:800">Gr</th><th style="padding:3px 2px;font-weight:800">PJ</th><th style="padding:3px 2px;font-weight:800">Pts</th><th style="padding:3px 2px;font-weight:800">DG</th><th style="padding:3px 2px;font-weight:800">GF</th></tr>`;
     bestThirds.forEach((t, i) => {
       const qualifies = i < 8;
-      o += `<tr style="border-bottom:1px solid rgba(37,37,80,.1);background:${qualifies?"rgba(245,158,11,.06)":"transparent"}"><td style="padding:4px 2px;font-weight:800;color:var(--t3)">${i+1}</td><td style="padding:4px 2px;font-weight:700;white-space:nowrap">${flag(t.name)} ${t.name} ${qualifies?"🟡":""}</td><td style="padding:4px 2px;text-align:center;color:var(--pl);font-weight:700">${t.group}</td><td style="padding:4px 2px;text-align:center;color:var(--t2)">${t.mp}</td><td style="padding:4px 2px;text-align:center;font-weight:900;color:var(--gd)">${t.pts}</td><td style="padding:4px 2px;text-align:center;color:${t.gd>0?"var(--gl)":t.gd<0?"var(--rd)":"var(--t3)"}">${t.gd>0?"+":""}${t.gd}</td><td style="padding:4px 2px;text-align:center;color:var(--t2)">${t.gf}</td></tr>`;
+      o += `<tr style="border-bottom:1px solid rgba(37,37,80,.1);background:${qualifies?"rgba(245,158,11,.06)":"transparent"};${!qualifies?"opacity:.5":""}"><td style="padding:4px 2px;font-weight:800;color:var(--t3)">${i+1}</td><td style="padding:4px 2px;font-weight:700;white-space:nowrap">${flag(t.name)} ${t.name} ${qualifies?"🟡":""}</td><td style="padding:4px 2px;text-align:center;color:var(--pl);font-weight:700">${t.group}</td><td style="padding:4px 2px;text-align:center;color:var(--t2)">${t.mp}</td><td style="padding:4px 2px;text-align:center;font-weight:900;color:var(--gd)">${t.pts}</td><td style="padding:4px 2px;text-align:center;color:${t.gd>0?"var(--gl)":t.gd<0?"var(--rd)":"var(--t3)"}">${t.gd>0?"+":""}${t.gd}</td><td style="padding:4px 2px;text-align:center;color:var(--t2)">${t.gf}</td></tr>`;
     });
     o += `</table></div>`;
   }
