@@ -142,7 +142,7 @@ function bestThirdPlaced(standings) {
   // Sort same as group tiebreakers
   thirds.sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
   
-  return thirds.slice(0, 8); // best 8 third-placed teams advance
+  return thirds; // return all 12, rendering will highlight top 8
 }
 
 // ═══ RESOLVE TEAM FOR A KNOCKOUT MATCH SLOT ═══
