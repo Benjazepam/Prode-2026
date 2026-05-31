@@ -170,14 +170,23 @@ S.user={name,isAdmin:false};S.screen="play";render();}
 
 async function doAdminLogin(){const p=document.getElementById("adminPassIn")?.value||"";const h=await sha256(p);if(h===AH){S.user={name:"Admin",isAdmin:true};S.screen="admin";S.showAdmin=false;await loadAll();render();}else toast("❌ Contraseña incorrecta");}
 
-async function setScore(k,si,v){if(isLocked(k))return;S.players[S.user.name].matches[k][si]=v;await dbSet("prode-players",S.players);render();}
+async function setScore(k,si,v){if(isLocked(k))return;S.players[S.user.name].matches[k][si]=v;await dbSet("prode-players",S.players);updateProgress();}
 async function setSpec(k,v){if(specialsLocked()){toast("🔒 Especiales bloqueadas — el mundial ya empezó");return;}S.players[S.user.name].specials[k]=v;await dbSet("prode-players",S.players);render();}
 async function setPt(k,v){S.config.points[k]=parseFloat(v)||0;await dbSet("prode-config",S.config);render();}
 async function setRes(k,si,v){if(!S.results.matches[k])S.results.matches[k]={h:"",a:""};S.results.matches[k][si]=v;await dbSet("prode-results",S.results);render();}
 async function setRSp(k,v){if(!S.results.specials)S.results.specials={};S.results.specials[k]=v;await dbSet("prode-results",S.results);render();}
-async function setKoScore(id,si,v){if(!S.players[S.user.name].knockout)S.players[S.user.name].knockout={};if(!S.players[S.user.name].knockout[id])S.players[S.user.name].knockout[id]={h:"",a:""};S.players[S.user.name].knockout[id][si]=v;await dbSet("prode-players",S.players);render();}
+async function setKoScore(id,si,v){if(!S.players[S.user.name].knockout)S.players[S.user.name].knockout={};if(!S.players[S.user.name].knockout[id])S.players[S.user.name].knockout[id]={h:"",a:""};S.players[S.user.name].knockout[id][si]=v;await dbSet("prode-players",S.players);updateProgress();}
 async function setKoRes(id,si,v){if(!S.results.knockout)S.results.knockout={};if(!S.results.knockout[id])S.results.knockout[id]={h:"",a:""};S.results.knockout[id][si]=v;await dbSet("prode-results",S.results);render();}
 async function setKoPen(id,who){if(!S.results.knockout)S.results.knockout={};if(!S.results.knockout[id])S.results.knockout[id]={h:"",a:""};S.results.knockout[id].pen=who;await dbSet("prode-results",S.results);render();}
+// Update just the progress bar without re-rendering the whole page
+function updateProgress(){
+  const pd=S.players[S.user.name];if(!pd)return;
+  const pct=comp(pd);
+  const bar=document.querySelector(".pf");
+  const pctText=document.querySelector(".pf")?.parentElement?.nextElementSibling;
+  if(bar){bar.style.width=pct+"%";bar.style.background=pct===100?"var(--gn)":"linear-gradient(90deg,var(--pr),var(--pl))";}
+  if(pctText){pctText.textContent=pct+"%";pctText.style.color=pct===100?"var(--gl)":"var(--pl)";}
+}
 async function delPlayer(n){delete S.players[n];await dbSet("prode-players",S.players);toast("Borrado: "+n);}
 // Group handlers
 async function createGroup(){
