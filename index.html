@@ -103,7 +103,7 @@ const SPECIALS=[
 ];
 const DP={resultado:3,goles_equipo:1,exacto:5,ko_multi:1.5,campeon:20,subcampeon:12,tercero:8,goleador:15,goles_goleador:10,mas_goleador:8,menos_recibe:8,mas_goleado:8,menos_goles:8,ultimo:8,decepcion:6,sorpresa:6,mvp:12,mejor_arq:10,mejor_joven:10,gol_torneo:10,partido_mas_goles:5};
 // Specials lock when the World Cup starts (first match kickoff)
-const SPECIALS_LOCK="2026-06-11T19:00Z";
+const SPECIALS_LOCK="2026-01-11T19:00Z";
 function specialsLocked(){if(TEST_MODE)return true;return new Date()>=new Date(SPECIALS_LOCK);}
 const AH="7d93823faecc8df64da2d16c6de6c8ee54fae1fec2278efcede48d7a0ed00c04";
 async function sha256(t){const d=new TextEncoder().encode(t);const b=await crypto.subtle.digest("SHA-256",d);return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,"0")).join("");}
