@@ -70,7 +70,7 @@ const GM={};Object.entries(GROUPS).forEach(([g,t])=>{GM[g]=[[t[0],t[2]],[t[1],t[
 
 // Kickoff UTC times
 const KO={
-"A-0":"2026-05-27T22:10Z","A-1":"2026-06-12T02:00Z","A-2":"2026-06-19T03:00Z","A-3":"2026-06-18T16:00Z","A-4":"2026-06-25T01:00Z","A-5":"2026-06-25T01:00Z",
+"A-0":"2026-06-11T19:00Z","A-1":"2026-06-12T02:00Z","A-2":"2026-06-19T03:00Z","A-3":"2026-06-18T16:00Z","A-4":"2026-06-25T01:00Z","A-5":"2026-06-25T01:00Z",
 "B-0":"2026-06-12T19:00Z","B-1":"2026-06-13T19:00Z","B-2":"2026-06-18T22:00Z","B-3":"2026-06-18T19:00Z","B-4":"2026-06-24T19:00Z","B-5":"2026-06-24T19:00Z",
 "C-0":"2026-06-13T22:00Z","C-1":"2026-06-14T01:00Z","C-2":"2026-06-19T22:00Z","C-3":"2026-06-20T01:00Z","C-4":"2026-06-24T22:00Z","C-5":"2026-06-24T22:00Z",
 "D-0":"2026-06-13T01:00Z","D-1":"2026-06-14T04:00Z","D-2":"2026-06-19T19:00Z","D-3":"2026-06-20T04:00Z","D-4":"2026-06-26T02:00Z","D-5":"2026-06-26T02:00Z",
@@ -103,7 +103,7 @@ const SPECIALS=[
 ];
 const DP={resultado:3,goles_equipo:1,exacto:5,ko_multi:1.5,campeon:20,subcampeon:12,tercero:8,goleador:15,goles_goleador:10,mas_goleador:8,menos_recibe:8,mas_goleado:8,menos_goles:8,ultimo:8,decepcion:6,sorpresa:6,mvp:12,mejor_arq:10,mejor_joven:10,gol_torneo:10,partido_mas_goles:5};
 // Specials lock when the World Cup starts (first match kickoff)
-const SPECIALS_LOCK="2026-01-01T00:00Z";
+const SPECIALS_LOCK="2026-06-11T19:00Z";
 function specialsLocked(){if(TEST_MODE)return true;return new Date()>=new Date(SPECIALS_LOCK);}
 const AH="7d93823faecc8df64da2d16c6de6c8ee54fae1fec2278efcede48d7a0ed00c04";
 async function sha256(t){const d=new TextEncoder().encode(t);const b=await crypto.subtle.digest("SHA-256",d);return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,"0")).join("");}
