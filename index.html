@@ -19,6 +19,7 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 <script src="api.js"></script>
 <script src="knockout.js"></script>
 <script src="groups.js"></script>
+<script src="players.js"></script>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -91,13 +92,13 @@ const ALL_M=[];Object.entries(GM).forEach(([g,ms])=>ms.forEach((m,i)=>{ALL_M.pus
 const SCORERS=["Kylian Mbappé","Erling Haaland","Lionel Messi","Vinícius Jr.","Harry Kane","Lautaro Martínez","Julián Álvarez","Bukayo Saka","Cristiano Ronaldo","Viktor Gyökeres","Mohamed Salah","Darwin Núñez","Jamal Musiala","Phil Foden","Cody Gakpo","Florian Wirtz","Jude Bellingham","Lamine Yamal","Alejandro Garnacho","Fermín López","Dani Olmo","Pedri","Victor Osimhen","Serge Gnabry","Denzel Dumfries","Memphis Depay","Xavi Simons","Mehdi Taremi","Alexander Isak","Dejan Kulusevski","Ademola Lookman","Iñaki Williams","Marcus Rashford","Kevin De Bruyne","Jérémy Doku","Santiago Giménez","Luis Suárez","Luis Díaz","Rafael Leão","Randal Kolo Muani","Otro"];
 const SPECIALS=[
   {key:"campeon",label:"Campeón",icon:"🏆",type:"team"},{key:"subcampeon",label:"Subcampeón",icon:"🥈",type:"team"},
-  {key:"tercero",label:"Tercer puesto",icon:"🥉",type:"team"},{key:"goleador",label:"Goleador",icon:"👟",type:"scorer"},
+  {key:"tercero",label:"Tercer puesto",icon:"🥉",type:"team"},{key:"goleador",label:"Goleador",icon:"👟",type:"player",posFilter:null},
   {key:"goles_goleador",label:"Goles del goleador",icon:"🎯",type:"number"},
   {key:"mas_goleador",label:"País más goleador",icon:"💥",type:"team"},{key:"menos_recibe",label:"Mejor defensa (menos recibe)",icon:"🧱",type:"team"},
   {key:"mas_goleado",label:"País más goleado",icon:"😵",type:"team"},{key:"menos_goles",label:"Menos goles a favor",icon:"🔒",type:"team"},
   {key:"ultimo",label:"Equipo último",icon:"💀",type:"team"},{key:"decepcion",label:"Decepción",icon:"😔",type:"team"},
-  {key:"sorpresa",label:"Sorpresa",icon:"🤩",type:"team"},{key:"mvp",label:"MVP",icon:"🌟",type:"text"},
-  {key:"mejor_arq",label:"Mejor arquero",icon:"🧤",type:"text"},{key:"mejor_joven",label:"Mejor joven",icon:"👶",type:"text"},
+  {key:"sorpresa",label:"Sorpresa",icon:"🤩",type:"team"},{key:"mvp",label:"MVP",icon:"🌟",type:"player",posFilter:null},
+  {key:"mejor_arq",label:"Mejor arquero",icon:"🧤",type:"player",posFilter:"GK"},{key:"mejor_joven",label:"Mejor joven",icon:"👶",type:"player",posFilter:null},
   {key:"gol_torneo",label:"Total goles torneo",icon:"📊",type:"number"},
   {key:"partido_mas_goles",label:"Partido con más goles (grupos)",icon:"🔥",type:"match"},
 ];
@@ -111,15 +112,39 @@ function emptyP(){const p={matches:{},specials:{},knockout:{}};Object.entries(GM
 function tOpts(s){return`<option value="">Elegí...</option>${TEAMS.map(t=>`<option value="${t}"${s===t?" selected":""}>${t}</option>`).join("")}`;}
 function scOpts(s){return`<option value="">Elegí...</option>${SCORERS.map(x=>`<option value="${x}"${s===x?" selected":""}>${x}</option>`).join("")}`;}
 function mOpts(s){return`<option value="">Elegí partido...</option>${ALL_M.map(m=>`<option value="${m.k}"${s===m.k?" selected":""}>${m.l}</option>`).join("")}`;}
-
+// Two-step player dropdown helpers
+function playerTeamOpts(selectedTeam){return`<option value="">Elegí selección...</option>${TEAMS.map(t=>`<option value="${t}"${t===selectedTeam?" selected":""}>${t}</option>`).join("")}`;}
+function playerNameOpts(team, posFilter, selectedName){
+  if(!team||typeof SQUADS==="undefined")return`<option value="">Primero elegí la selección</option>`;
+  const players=(SQUADS[team]||[]).filter(p=>!posFilter||p.pos===posFilter);
+  if(!players.length)return`<option value="">Sin jugadores</option>`;
+  return`<option value="">Elegí jugador...</option>${players.map(p=>`<option value="${p.name}"${p.name===selectedName?" selected":""}>${p.name}</option>`).join("")}`;
+}
+// Parse "team|player" value format
+function parsePlayerVal(v){if(!v||!v.includes("|"))return{team:"",name:v||""};const i=v.indexOf("|");return{team:v.slice(0,i),name:v.slice(i+1)};}
+function encodePlayerVal(team,name){return team&&name?`${team}|${name}`:"";}
+// Handler for team part of player dropdown
+function setSpecPlayerTeam(key,team){const cur=parsePlayerVal(pd_specials_cache[key]||"");setSpecImmediate(key,encodePlayerVal(team,cur.name));}
 // ═══ STATE ═══
 let S={screen:"login",user:null,config:{points:{...DP}},players:{},results:{matches:{},specials:{},knockout:{}},playTab:"groups",ag:"A",adminTab:"points",adminGr:"A",toast:"",showAllPts:false,showAdmin:false,viewPlayer:null,koRound:"R32",adminKoRound:"R32",rankTab:"general",standingsGr:"A"};
+// Cache for player dropdown team selection (doesn't save until player chosen)
+let pd_specials_cache={};
+function setSpecImmediate(k,v){pd_specials_cache[k]=v;render();}
 async function loadAll(){const[c,p,r]=await Promise.all([dbGet("prode-config"),dbGet("prode-players"),dbGet("prode-results")]);if(c)S.config=c;if(p)S.players=p;if(r)S.results=r;}
 function toast(m){S.toast=m;render();setTimeout(()=>{S.toast="";render();},2e3);}
 function comp(pd){if(!pd)return 0;const mF=Object.values(pd.matches||{}).filter(m=>m.h!==""&&m.a!=="").length;const sF=SPECIALS.filter(c=>(pd.specials||{})[c.key]&&pd.specials[c.key]!=="").length;return Math.round(((mF+sF)/(72+SPECIALS.length))*100);}
 function calcPts(pd){if(!pd)return{total:0,det:{e:0,r:0,g:0}};const pts=S.config.points;let mP=0,sP=0,det={e:0,r:0,g:0};
 Object.entries(GM).forEach(([g,ms])=>{ms.forEach((_,i)=>{const k=`${g}-${i}`,pr=pd.matches?.[k],re=S.results.matches?.[k];if(!pr||!re||pr.h===""||pr.a===""||re.h===""||re.a==="")return;const pH=+pr.h,pA=+pr.a,rH=+re.h,rA=+re.a;if(pH===rH&&pA===rA){mP+=(pts.exacto||0)+(pts.resultado||0)+(pts.goles_equipo||0)*2;det.e++;det.r++;det.g+=2;return;}if(Math.sign(pH-pA)===Math.sign(rH-rA)){mP+=pts.resultado||0;det.r++;}if(pH===rH){mP+=pts.goles_equipo||0;det.g++;}if(pA===rA){mP+=pts.goles_equipo||0;det.g++;}});});
-const rSp=S.results.specials||{};SPECIALS.forEach(c=>{const pr=pd.specials?.[c.key],re=rSp[c.key];if(!pr||!re||pr===""||re==="")return;if(c.key==="gol_torneo"){const diff=Math.abs(+pr- +re);const base=pts[c.key]||0;if(diff===0)sP+=base;else if(diff<=5)sP+=Math.round(base*0.6);else if(diff<=10)sP+=Math.round(base*0.3);else if(diff<=20)sP+=Math.round(base*0.1);}else if(c.type==="number"){if(+pr===+re)sP+=pts[c.key]||0;}else{if(pr.toLowerCase().trim()===re.toLowerCase().trim())sP+=pts[c.key]||0;}});
+const rSp=S.results.specials||{};SPECIALS.forEach(c=>{const pr=pd.specials?.[c.key],re=rSp[c.key];if(!pr||!re||pr===""||re==="")return;
+  if(c.key==="gol_torneo"){const diff=Math.abs(+pr- +re);const base=pts[c.key]||0;if(diff===0)sP+=base;else if(diff<=5)sP+=Math.round(base*0.6);else if(diff<=10)sP+=Math.round(base*0.3);else if(diff<=20)sP+=Math.round(base*0.1);}
+  else if(c.type==="number"){if(+pr===+re)sP+=pts[c.key]||0;}
+  else if(c.type==="player"){
+    // Player stored as "team|name", compare by name only (lowercase)
+    const prName=parsePlayerVal(pr).name||pr;
+    const reName=parsePlayerVal(re).name||re;
+    if(prName.toLowerCase().trim()===reName.toLowerCase().trim())sP+=pts[c.key]||0;
+  }
+  else{if(pr.toLowerCase().trim()===re.toLowerCase().trim())sP+=pts[c.key]||0;}});
 return{total:mP+sP,det};}
 // Add KO points
 function calcTotalPts(pd){
@@ -166,7 +191,12 @@ async function checkApi(){
 async function doLogin(){const name=document.getElementById("nameIn")?.value?.trim();if(!name)return;
 if(S.players[name]){const pin=prompt("👤 \""+name+"\" ya existe.\nIngresá tu PIN para entrar:");if(!pin)return;const h=await sha256(pin);if(S.players[name].pin!==h){toast("❌ PIN incorrecto");return;}}
 else{const pin=prompt("¡Hola "+name+"! Creá un PIN (mín 3 dígitos) para proteger tu prode:");if(!pin||pin.length<3){toast("❌ PIN muy corto (mín 3)");return;}const h=await sha256(pin);const np=emptyP();np.pin=h;S.players[name]=np;await dbSet("prode-players",S.players);}
-S.user={name,isAdmin:false};S.screen="play";render();}
+S.user={name,isAdmin:false};S.screen="play";
+// Sync specials cache from saved data
+pd_specials_cache={};
+const savedSpecials=S.players[name]?.specials||{};
+Object.keys(savedSpecials).forEach(k=>{pd_specials_cache[k]=savedSpecials[k];});
+render();}
 
 async function doAdminLogin(){const p=document.getElementById("adminPassIn")?.value||"";const h=await sha256(p);if(h===AH){S.user={name:"Admin",isAdmin:true};S.screen="admin";S.showAdmin=false;await loadAll();render();}else toast("❌ Contraseña incorrecta");}
 
@@ -354,14 +384,29 @@ if(S.playTab==="specials"){
 const sLock=specialsLocked();
 o+=`<div class="cd" style="padding:10px"><div style="font-size:12px;color:${sLock?"var(--rd)":"var(--t2)"}">${sLock?"🔒 Predicciones bloqueadas — el mundial ya empezó":"💡 Dan muchos puntos. Se bloquean cuando arranca el mundial."}</div></div>`;
 SPECIALS.forEach(cat=>{
-  const val=pd.specials[cat.key]||"",isCust=cat.type==="scorer"&&val.startsWith("Otro:"),selV=isCust?"Otro":val;
+  // For player type, use cache for current UI state; saved value is "team|name"
+  const savedVal=pd.specials[cat.key]||"";
+  const cacheVal=pd_specials_cache[cat.key]||savedVal;
+  const pv=parsePlayerVal(cacheVal);
   o+=`<div class="cd" style="padding:12px;margin-bottom:8px${sLock?";opacity:.6":""}"><div style="font-size:13px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px"><span>${cat.icon}</span> ${cat.label}<span style="margin-left:auto;font-size:11px;color:var(--gd);font-weight:800">+${S.config.points[cat.key]||0}</span></div>`;
-  if(cat.type==="team")o+=`<select class="sel" ${sLock?"disabled":""} onchange="setSpec('${cat.key}',this.value)">${tOpts(val)}</select>`;
-  else if(cat.type==="scorer"){o+=`<select class="sel" ${sLock?"disabled":""} onchange="if(this.value==='Otro')setSpec('${cat.key}','Otro:');else setSpec('${cat.key}',this.value)">${scOpts(selV)}</select>`;
-    if(selV==="Otro")o+=`<input class="inp" style="margin-top:8px" ${sLock?"disabled":""} value="${isCust?val.replace("Otro:","").trim():""}" placeholder="Nombre..." onchange="setSpec('${cat.key}','Otro: '+this.value)">`;}
-  else if(cat.type==="match")o+=`<select class="sel" ${sLock?"disabled":""} onchange="setSpec('${cat.key}',this.value)">${mOpts(val)}</select>`;
-  else if(cat.type==="number")o+=`<input class="inp" type="number" min="0" ${sLock?"disabled":""} value="${val}" placeholder="${cat.key==="gol_torneo"?"Ej: 172":"Ej: 8"}" onchange="setSpec('${cat.key}',this.value)">`;
-  else o+=`<input class="inp" ${sLock?"disabled":""} value="${val}" placeholder="Tu predicción..." onchange="setSpec('${cat.key}',this.value)">`;
+  if(cat.type==="team"){
+    o+=`<select class="sel" ${sLock?"disabled":""} onchange="setSpec('${cat.key}',this.value)">${tOpts(savedVal)}</select>`;
+  } else if(cat.type==="player"){
+    // Step 1: team selector
+    o+=`<select class="sel" ${sLock?"disabled":""} style="margin-bottom:6px" onchange="setSpecImmediate('${cat.key}',encodePlayerVal(this.value,''))">${playerTeamOpts(pv.team)}</select>`;
+    // Step 2: player selector (only if team chosen)
+    if(pv.team){
+      const showSaved=parsePlayerVal(savedVal).team===pv.team?parsePlayerVal(savedVal).name:"";
+      o+=`<select class="sel" ${sLock?"disabled":""} onchange="if(this.value){const v=encodePlayerVal('${pv.team}',this.value);setSpec('${cat.key}',v);pd_specials_cache['${cat.key}']=v;}">${playerNameOpts(pv.team,cat.posFilter,showSaved||pv.name)}</select>`;
+    }
+    if(savedVal&&savedVal.includes("|"))o+=`<div style="font-size:11px;color:var(--gl);margin-top:4px">✓ ${parsePlayerVal(savedVal).name} (${parsePlayerVal(savedVal).team})</div>`;
+  } else if(cat.type==="match"){
+    o+=`<select class="sel" ${sLock?"disabled":""} onchange="setSpec('${cat.key}',this.value)">${mOpts(savedVal)}</select>`;
+  } else if(cat.type==="number"){
+    o+=`<input class="inp" type="number" min="0" ${sLock?"disabled":""} value="${savedVal}" placeholder="${cat.key==="gol_torneo"?"Ej: 172":"Ej: 8"}" onchange="setSpec('${cat.key}',this.value)">`;
+  } else {
+    o+=`<input class="inp" ${sLock?"disabled":""} value="${savedVal}" placeholder="Tu predicción..." onchange="setSpec('${cat.key}',this.value)">`;
+  }
   o+=`</div>`;});}
 
 if(S.playTab==="mygroups"){
@@ -384,7 +429,7 @@ if(S.viewPlayer&&S.players[S.viewPlayer]){
   let o=`<div style="padding:16px"><button class="btn bgh" style="margin-bottom:10px;width:auto;padding:6px 14px;font-size:12px" onclick="S.viewPlayer=null;render()">← Volver al ranking</button>`;
   o+=`<div class="cd"><div style="font-size:18px;font-weight:800;margin-bottom:4px">👤 ${S.viewPlayer}</div><div style="font-size:13px;color:var(--t2)">Completado: ${comp(vp)}% · Total: <b style="color:var(--gd)">${vpts.total} pts</b></div><div style="font-size:12px;color:var(--t3);margin-top:4px">${vpts.det.e} exactos 🎯 · ${vpts.det.r} resultados ✓ · ${vpts.det.g} goles ⚽</div></div>`;
   o+=`<div class="cd"><div style="font-size:14px;font-weight:800;margin-bottom:8px">🏅 Predicciones especiales</div>`;
-  SPECIALS.forEach(s=>{const v=vp.specials?.[s.key]||"—";o+=`<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid rgba(37,37,80,.1)"><span style="color:var(--t2)">${s.icon} ${s.label}</span><b style="color:var(--tx)">${v}</b></div>`;});
+  SPECIALS.forEach(s=>{const raw=vp.specials?.[s.key]||"—";const v=s.type==="player"&&raw.includes("|")?parsePlayerVal(raw).name+" ("+parsePlayerVal(raw).team+")":raw;o+=`<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid rgba(37,37,80,.1)"><span style="color:var(--t2)">${s.icon} ${s.label}</span><b style="color:var(--tx)">${v}</b></div>`;});
   o+=`</div></div>`;return o;}
 
 let o=`<div style="padding:16px"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><button class="btn bgh" style="width:auto;padding:5px 12px;font-size:12px" onclick="doRefresh()">🔄</button><button class="btn bp" style="width:auto;padding:5px 12px;font-size:12px" onclick="shareWA()">📤 WhatsApp</button></div>`;
@@ -460,13 +505,25 @@ if(typeof renderScorersAdmin==="function"){
 }}
 
 if(S.adminTab==="realspecials"){
-o+=`<div class="cd" style="padding:10px"><div style="font-size:12px;color:var(--t2)">🏅 Datos reales</div></div>`;
-SPECIALS.forEach(cat=>{const val=(S.results.specials||{})[cat.key]||"";
-o+=`<div class="cd" style="padding:12px;margin-bottom:8px"><div style="font-size:13px;font-weight:700;margin-bottom:6px">${cat.icon} ${cat.label}</div>`;
-if(cat.type==="team")o+=`<select class="sel" style="border-color:rgba(245,158,11,.35);color:var(--gd)" onchange="setRSp('${cat.key}',this.value)"><option value="">...</option>${TEAMS.map(t=>`<option value="${t}"${val===t?" selected":""}>${t}</option>`).join("")}</select>`;
-else if(cat.type==="match")o+=`<select class="sel" style="border-color:rgba(245,158,11,.35);color:var(--gd)" onchange="setRSp('${cat.key}',this.value)">${mOpts(val)}</select>`;
-else o+=`<input class="inp" type="${cat.type==="number"?"number":"text"}" value="${val}" placeholder="..." style="border-color:rgba(245,158,11,.35);color:var(--gd)" onchange="setRSp('${cat.key}',this.value)">`;
-o+=`</div>`;});}
+o+=`<div class="cd" style="padding:10px"><div style="font-size:12px;color:var(--t2)">🏅 Cargá los resultados reales al final del torneo.</div></div>`;
+if(!S.adminRSpCache)S.adminRSpCache={};
+SPECIALS.forEach(cat=>{
+  const val=(S.results.specials||{})[cat.key]||"";
+  const cacheVal=S.adminRSpCache[cat.key]!==undefined?S.adminRSpCache[cat.key]:val;
+  const pv=parsePlayerVal(cacheVal);
+  o+=`<div class="cd" style="padding:12px;margin-bottom:8px"><div style="font-size:13px;font-weight:700;margin-bottom:6px">${cat.icon} ${cat.label}</div>`;
+  if(cat.type==="team")o+=`<select class="sel" style="border-color:rgba(245,158,11,.35);color:var(--gd)" onchange="setRSp('${cat.key}',this.value)"><option value="">...</option>${TEAMS.map(t=>`<option value="${t}"${val===t?" selected":""}>${t}</option>`).join("")}</select>`;
+  else if(cat.type==="match")o+=`<select class="sel" style="border-color:rgba(245,158,11,.35);color:var(--gd)" onchange="setRSp('${cat.key}',this.value)">${mOpts(val)}</select>`;
+  else if(cat.type==="player"){
+    o+=`<select class="sel" style="border-color:rgba(245,158,11,.35);color:var(--gd);margin-bottom:6px" onchange="S.adminRSpCache['${cat.key}']=encodePlayerVal(this.value,'');render()">${playerTeamOpts(pv.team)}</select>`;
+    if(pv.team){
+      const showSaved=parsePlayerVal(val).team===pv.team?parsePlayerVal(val).name:"";
+      o+=`<select class="sel" style="border-color:rgba(245,158,11,.35);color:var(--gd)" onchange="const v=encodePlayerVal('${pv.team}',this.value);setRSp('${cat.key}',v);S.adminRSpCache['${cat.key}']=v;">${playerNameOpts(pv.team,cat.posFilter,showSaved||pv.name)}</select>`;
+    }
+    if(val&&val.includes("|"))o+=`<div style="font-size:11px;color:var(--gl);margin-top:4px">✓ ${parsePlayerVal(val).name} (${parsePlayerVal(val).team})</div>`;
+  }
+  else o+=`<input class="inp" type="${cat.type==="number"?"number":"text"}" value="${val}" placeholder="..." style="border-color:rgba(245,158,11,.35);color:var(--gd)" onchange="setRSp('${cat.key}',this.value)">`;
+  o+=`</div>`;});}
 
 if(S.adminTab==="friendgroups"){
 if(typeof renderGroupsAdmin==="function"){
