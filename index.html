@@ -122,9 +122,9 @@ function playerNameOpts(team, posFilter, selectedName){
 }
 // Parse "team|player" value format
 function parsePlayerVal(v){if(!v||!v.includes("|"))return{team:"",name:v||""};const i=v.indexOf("|");return{team:v.slice(0,i),name:v.slice(i+1)};}
-function encodePlayerVal(team,name){return team&&name?`${team}|${name}`:"";}
-// Handler for team part of player dropdown
-function setSpecPlayerTeam(key,team){const cur=parsePlayerVal(pd_specials_cache[key]||"");setSpecImmediate(key,encodePlayerVal(team,cur.name));}
+function encodePlayerVal(team,name){if(!team)return"";return name?`${team}|${name}`:`${team}|`;}
+// Store only team selection (intermediate state, not saved to DB)
+function setSpecTeamOnly(key,team){pd_specials_cache[key]=encodePlayerVal(team,"");render();}
 // ═══ STATE ═══
 let S={screen:"login",user:null,config:{points:{...DP}},players:{},results:{matches:{},specials:{},knockout:{}},playTab:"groups",ag:"A",adminTab:"points",adminGr:"A",toast:"",showAllPts:false,showAdmin:false,viewPlayer:null,koRound:"R32",adminKoRound:"R32",rankTab:"general",standingsGr:"A"};
 // Cache for player dropdown team selection (doesn't save until player chosen)
@@ -393,13 +393,14 @@ SPECIALS.forEach(cat=>{
     o+=`<select class="sel" ${sLock?"disabled":""} onchange="setSpec('${cat.key}',this.value)">${tOpts(savedVal)}</select>`;
   } else if(cat.type==="player"){
     // Step 1: team selector
-    o+=`<select class="sel" ${sLock?"disabled":""} style="margin-bottom:6px" onchange="setSpecImmediate('${cat.key}',encodePlayerVal(this.value,''))">${playerTeamOpts(pv.team)}</select>`;
-    // Step 2: player selector (only if team chosen)
+    o+=`<select class="sel" ${sLock?"disabled":""} style="margin-bottom:6px" onchange="setSpecTeamOnly('${cat.key}',this.value)">${playerTeamOpts(pv.team)}</select>`;
+    // Step 2: player selector (only shown once team is chosen)
     if(pv.team){
-      const showSaved=parsePlayerVal(savedVal).team===pv.team?parsePlayerVal(savedVal).name:"";
-      o+=`<select class="sel" ${sLock?"disabled":""} onchange="if(this.value){const v=encodePlayerVal('${pv.team}',this.value);setSpec('${cat.key}',v);pd_specials_cache['${cat.key}']=v;}">${playerNameOpts(pv.team,cat.posFilter,showSaved||pv.name)}</select>`;
+      const savedPv=parsePlayerVal(savedVal);
+      const selectedName=(savedPv.team===pv.team)?savedPv.name:(pv.name||"");
+      o+=`<select class="sel" ${sLock?"disabled":""} onchange="const v='${pv.team}|'+this.value;setSpec('${cat.key}',v);pd_specials_cache['${cat.key}']=v;">${playerNameOpts(pv.team,cat.posFilter,selectedName)}</select>`;
     }
-    if(savedVal&&savedVal.includes("|"))o+=`<div style="font-size:11px;color:var(--gl);margin-top:4px">✓ ${parsePlayerVal(savedVal).name} (${parsePlayerVal(savedVal).team})</div>`;
+    if(savedVal&&savedVal.includes("|")&&parsePlayerVal(savedVal).name){const spv=parsePlayerVal(savedVal);o+=`<div style="font-size:11px;color:var(--gl);margin-top:4px">✓ ${spv.name} (${spv.team})</div>`;}
   } else if(cat.type==="match"){
     o+=`<select class="sel" ${sLock?"disabled":""} onchange="setSpec('${cat.key}',this.value)">${mOpts(savedVal)}</select>`;
   } else if(cat.type==="number"){
@@ -515,12 +516,13 @@ SPECIALS.forEach(cat=>{
   if(cat.type==="team")o+=`<select class="sel" style="border-color:rgba(245,158,11,.35);color:var(--gd)" onchange="setRSp('${cat.key}',this.value)"><option value="">...</option>${TEAMS.map(t=>`<option value="${t}"${val===t?" selected":""}>${t}</option>`).join("")}</select>`;
   else if(cat.type==="match")o+=`<select class="sel" style="border-color:rgba(245,158,11,.35);color:var(--gd)" onchange="setRSp('${cat.key}',this.value)">${mOpts(val)}</select>`;
   else if(cat.type==="player"){
-    o+=`<select class="sel" style="border-color:rgba(245,158,11,.35);color:var(--gd);margin-bottom:6px" onchange="S.adminRSpCache['${cat.key}']=encodePlayerVal(this.value,'');render()">${playerTeamOpts(pv.team)}</select>`;
+    o+=`<select class="sel" style="border-color:rgba(245,158,11,.35);color:var(--gd);margin-bottom:6px" onchange="S.adminRSpCache['${cat.key}']=(this.value?this.value+'|':'');render()">${playerTeamOpts(pv.team)}</select>`;
     if(pv.team){
-      const showSaved=parsePlayerVal(val).team===pv.team?parsePlayerVal(val).name:"";
-      o+=`<select class="sel" style="border-color:rgba(245,158,11,.35);color:var(--gd)" onchange="const v=encodePlayerVal('${pv.team}',this.value);setRSp('${cat.key}',v);S.adminRSpCache['${cat.key}']=v;">${playerNameOpts(pv.team,cat.posFilter,showSaved||pv.name)}</select>`;
+      const savedPv=parsePlayerVal(val);
+      const selName=(savedPv.team===pv.team)?savedPv.name:"";
+      o+=`<select class="sel" style="border-color:rgba(245,158,11,.35);color:var(--gd)" onchange="const v='${pv.team}|'+this.value;setRSp('${cat.key}',v);S.adminRSpCache['${cat.key}']=v;">${playerNameOpts(pv.team,cat.posFilter,selName)}</select>`;
     }
-    if(val&&val.includes("|"))o+=`<div style="font-size:11px;color:var(--gl);margin-top:4px">✓ ${parsePlayerVal(val).name} (${parsePlayerVal(val).team})</div>`;
+    if(val&&val.includes("|")&&parsePlayerVal(val).name){const vp2=parsePlayerVal(val);o+=`<div style="font-size:11px;color:var(--gl);margin-top:4px">✓ ${vp2.name} (${vp2.team})</div>`;}
   }
   else o+=`<input class="inp" type="${cat.type==="number"?"number":"text"}" value="${val}" placeholder="..." style="border-color:rgba(245,158,11,.35);color:var(--gd)" onchange="setRSp('${cat.key}',this.value)">`;
   o+=`</div>`;});}
