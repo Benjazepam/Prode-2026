@@ -58,6 +58,8 @@ input,select,button,textarea{font-family:inherit}button{cursor:pointer}
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 async function dbGet(k){try{const{data}=await sb.from("prode_storage").select("value").eq("key",k).single();return data?JSON.parse(data.value):null;}catch{return null;}}
 async function dbSet(k,v){try{await sb.from("prode_storage").upsert({key:k,value:JSON.stringify(v),updated_at:new Date().toISOString()});}catch(e){console.error(e);}}
+function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function jsArg(v){return esc(JSON.stringify(String(v??"")));}
 
 // ═══ COUNTRIES + FLAGS (ISO codes for flagcdn.com) ═══
 const GROUPS={A:["México","Corea del Sur","Sudáfrica","Chequia"],B:["Canadá","Suiza","Qatar","Bosnia-Herz."],C:["Brasil","Marruecos","Escocia","Haití"],D:["EE.UU.","Paraguay","Australia","Turquía"],E:["Alemania","Ecuador","Costa de Marfil","Curazao"],F:["Japón","Países Bajos","Suecia","Túnez"],G:["Bélgica","Irán","Egipto","Nueva Zelanda"],H:["España","Uruguay","Arabia Saudita","Cabo Verde"],I:["Francia","Noruega","Senegal","Irak"],J:["Argentina","Austria","Argelia","Jordania"],K:["Portugal","Colombia","Uzbekistán","R.D. Congo"],L:["Inglaterra","Croacia","Ghana","Panamá"]};
@@ -293,7 +295,7 @@ const $=document.getElementById("app"),u=S.user,pc=Object.keys(S.players).length
 let nv="";if(u){const tb=u.isAdmin?[["admin","⚙️ Admin"],["ranking","🏆 Ranking"]]:[["play","✏️ Mi Prode"],["ranking","🏆 Ranking"]];
 nv=`<div class="nav">${tb.map(([k,l])=>`<button class="nb ${S.screen===k?"a":""}" onclick="go('${k}')">${l}</button>`).join("")}<button class="nb" onclick="S.user=null;S.screen='login';S.showAdmin=false;render()">🚪</button></div>`;}
 const hd=`<div class="hdr"><div style="font-size:11px;letter-spacing:5px;text-transform:uppercase;opacity:.8">Súper Prode</div><div style="font-size:24px;font-weight:900;text-shadow:0 2px 10px rgba(0,0,0,.4)">MUNDIAL 2026 ⚽</div><div style="font-size:11px;opacity:.7">USA · México · Canadá — ${pc} jugador${pc!==1?"es":""}</div>${nv}</div>`;
-const tt=S.toast?`<div class="toast">${S.toast}</div>`:"";
+const tt=S.toast?`<div class="toast">${esc(S.toast)}</div>`:"";
 if(!u){$.innerHTML=hd+rLogin()+tt;return;}
 if(S.screen==="play")$.innerHTML=hd+rPlay()+tt;
 else if(S.screen==="ranking")$.innerHTML=hd+rRanking()+tt;
@@ -302,7 +304,7 @@ else if(S.screen==="admin")$.innerHTML=hd+rAdmin()+tt;}
 // ═══ LOGIN + INTRO ═══
 function rLogin(){
 const pts=S.config.points,pc=Object.keys(S.players).length;
-const list=pc>0?`<div class="cd" style="margin-top:6px"><div style="font-size:13px;font-weight:700;color:var(--t2);margin-bottom:8px">Jugadores (${pc}):</div><div style="display:flex;flex-wrap:wrap;gap:6px">${Object.keys(S.players).map(n=>`<span style="font-size:12px;background:var(--c2);border-radius:8px;padding:4px 10px;color:var(--t2)">👤 ${n} <span style="color:var(--pl)">${comp(S.players[n])}%</span></span>`).join("")}</div></div>`:"";
+const list=pc>0?`<div class="cd" style="margin-top:6px"><div style="font-size:13px;font-weight:700;color:var(--t2);margin-bottom:8px">Jugadores (${pc}):</div><div style="display:flex;flex-wrap:wrap;gap:6px">${Object.keys(S.players).map(n=>`<span style="font-size:12px;background:var(--c2);border-radius:8px;padding:4px 10px;color:var(--t2)">👤 ${esc(n)} <span style="color:var(--pl)">${comp(S.players[n])}%</span></span>`).join("")}</div></div>`:"";
 const adm=S.showAdmin?`<div style="font-size:14px;font-weight:700;margin-bottom:8px">🔐 Admin</div><input class="inp" type="password" id="adminPassIn" placeholder="Contraseña..." style="margin-bottom:8px" onkeydown="if(event.key==='Enter')doAdminLogin()"><button class="btn bgl" onclick="doAdminLogin()">Entrar</button>`:`<button style="background:none;border:none;color:var(--t3);font-size:13px;cursor:pointer;padding:4px;font-weight:600" onclick="S.showAdmin=true;render()">🔐 Admin...</button>`;
 
 // Dynamic intro with current points
@@ -332,7 +334,7 @@ const pd=S.players[S.user.name]||emptyP(),pct=comp(pd),g=S.ag;
 const gd=gr=>GM[gr].every((_,i)=>{const m=pd.matches[`${gr}-${i}`];return m&&m.h!==""&&m.a!=="";});
 const pend=pendingMatches(pd);
 
-let o=`<div style="padding:12px 16px"><div class="cd" style="margin-bottom:0"><div style="display:flex;align-items:center;gap:10px"><div style="font-size:18px">👤</div><div style="flex:1"><div style="font-size:15px;font-weight:800">${S.user.name}</div><div style="display:flex;align-items:center;gap:8px;margin-top:4px"><div class="pb"><div class="pf" style="width:${pct}%;background:${pct===100?"var(--gn)":"linear-gradient(90deg,var(--pr),var(--pl))"}"></div></div><span style="font-size:13px;font-weight:800;color:${pct===100?"var(--gl)":"var(--pl)"}">${pct}%</span></div></div></div></div></div>`;
+let o=`<div style="padding:12px 16px"><div class="cd" style="margin-bottom:0"><div style="display:flex;align-items:center;gap:10px"><div style="font-size:18px">👤</div><div style="flex:1"><div style="font-size:15px;font-weight:800">${esc(S.user.name)}</div><div style="display:flex;align-items:center;gap:8px;margin-top:4px"><div class="pb"><div class="pf" style="width:${pct}%;background:${pct===100?"var(--gn)":"linear-gradient(90deg,var(--pr),var(--pl))"}"></div></div><span style="font-size:13px;font-weight:800;color:${pct===100?"var(--gl)":"var(--pl)"}">${pct}%</span></div></div></div></div></div>`;
 
 if(pend>0)o+=`<div style="padding:0 16px"><div class="warn">⚠️ Tenés ${pend} partido${pend>1?"s":""} sin completar que se juega${pend>1?"n":""} en las próximas 24hs</div></div>`;
 
@@ -351,7 +353,7 @@ GM[g].forEach((match,i)=>{
   o+=`<div class="tl">${flag(match[1])}<span class="n">${match[1]}</span></div>`;
   if(lk)o+=`<span class="lktag">🔒</span>`;
   o+=`</div>`;
-  if(lk){const ot=Object.entries(S.players).filter(([n])=>n!==S.user.name).map(([n,d])=>{const pm=d.matches?.[k];if(!pm||pm.h===""||pm.a==="")return null;return`<b>${n}</b>:${pm.h}-${pm.a}`;}).filter(Boolean);
+  if(lk){const ot=Object.entries(S.players).filter(([n])=>n!==S.user.name).map(([n,d])=>{const pm=d.matches?.[k];if(!pm||pm.h===""||pm.a==="")return null;return`<b>${esc(n)}</b>:${esc(pm.h)}-${esc(pm.a)}`;}).filter(Boolean);
   if(ot.length)o+=`<div class="peek">👀 ${ot.join(" · ")}</div>`;}
 });
 o+=`<div style="display:flex;gap:6px;margin-top:10px">`;
@@ -398,15 +400,15 @@ SPECIALS.forEach(cat=>{
     if(pv.team){
       const savedPv=parsePlayerVal(savedVal);
       const selectedName=(savedPv.team===pv.team)?savedPv.name:(pv.name||"");
-      o+=`<select class="sel" ${sLock?"disabled":""} onchange="const v='${pv.team}|'+this.value;setSpec('${cat.key}',v);pd_specials_cache['${cat.key}']=v;">${playerNameOpts(pv.team,cat.posFilter,selectedName)}</select>`;
+      o+=`<select class="sel" ${sLock?"disabled":""} onchange="const v=${jsArg(pv.team+"|")}+this.value;setSpec('${cat.key}',v);pd_specials_cache['${cat.key}']=v;">${playerNameOpts(pv.team,cat.posFilter,selectedName)}</select>`;
     }
-    if(savedVal&&savedVal.includes("|")&&parsePlayerVal(savedVal).name){const spv=parsePlayerVal(savedVal);o+=`<div style="font-size:11px;color:var(--gl);margin-top:4px">✓ ${spv.name} (${spv.team})</div>`;}
+    if(savedVal&&savedVal.includes("|")&&parsePlayerVal(savedVal).name){const spv=parsePlayerVal(savedVal);o+=`<div style="font-size:11px;color:var(--gl);margin-top:4px">✓ ${esc(spv.name)} (${esc(spv.team)})</div>`;}
   } else if(cat.type==="match"){
     o+=`<select class="sel" ${sLock?"disabled":""} onchange="setSpec('${cat.key}',this.value)">${mOpts(savedVal)}</select>`;
   } else if(cat.type==="number"){
-    o+=`<input class="inp" type="number" min="0" ${sLock?"disabled":""} value="${savedVal}" placeholder="${cat.key==="gol_torneo"?"Ej: 172":"Ej: 8"}" onchange="setSpec('${cat.key}',this.value)">`;
+    o+=`<input class="inp" type="number" min="0" ${sLock?"disabled":""} value="${esc(savedVal)}" placeholder="${cat.key==="gol_torneo"?"Ej: 172":"Ej: 8"}" onchange="setSpec('${cat.key}',this.value)">`;
   } else {
-    o+=`<input class="inp" ${sLock?"disabled":""} value="${savedVal}" placeholder="Tu predicción..." onchange="setSpec('${cat.key}',this.value)">`;
+    o+=`<input class="inp" ${sLock?"disabled":""} value="${esc(savedVal)}" placeholder="Tu predicción..." onchange="setSpec('${cat.key}',this.value)">`;
   }
   o+=`</div>`;});}
 
@@ -428,9 +430,9 @@ const ranks=Object.entries(S.players).map(([n,d])=>({n,d,p:typeof calcTotalPts==
 if(S.viewPlayer&&S.players[S.viewPlayer]){
   const vp=S.players[S.viewPlayer],vpts=calcPts(vp);
   let o=`<div style="padding:16px"><button class="btn bgh" style="margin-bottom:10px;width:auto;padding:6px 14px;font-size:12px" onclick="S.viewPlayer=null;render()">← Volver al ranking</button>`;
-  o+=`<div class="cd"><div style="font-size:18px;font-weight:800;margin-bottom:4px">👤 ${S.viewPlayer}</div><div style="font-size:13px;color:var(--t2)">Completado: ${comp(vp)}% · Total: <b style="color:var(--gd)">${vpts.total} pts</b></div><div style="font-size:12px;color:var(--t3);margin-top:4px">${vpts.det.e} exactos 🎯 · ${vpts.det.r} resultados ✓ · ${vpts.det.g} goles ⚽</div></div>`;
+  o+=`<div class="cd"><div style="font-size:18px;font-weight:800;margin-bottom:4px">👤 ${esc(S.viewPlayer)}</div><div style="font-size:13px;color:var(--t2)">Completado: ${comp(vp)}% · Total: <b style="color:var(--gd)">${vpts.total} pts</b></div><div style="font-size:12px;color:var(--t3);margin-top:4px">${vpts.det.e} exactos 🎯 · ${vpts.det.r} resultados ✓ · ${vpts.det.g} goles ⚽</div></div>`;
   o+=`<div class="cd"><div style="font-size:14px;font-weight:800;margin-bottom:8px">🏅 Predicciones especiales</div>`;
-  SPECIALS.forEach(s=>{const raw=vp.specials?.[s.key]||"—";const v=s.type==="player"&&raw.includes("|")?parsePlayerVal(raw).name+" ("+parsePlayerVal(raw).team+")":raw;o+=`<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid rgba(37,37,80,.1)"><span style="color:var(--t2)">${s.icon} ${s.label}</span><b style="color:var(--tx)">${v}</b></div>`;});
+  SPECIALS.forEach(s=>{const raw=vp.specials?.[s.key]||"—";const v=s.type==="player"&&raw.includes("|")?parsePlayerVal(raw).name+" ("+parsePlayerVal(raw).team+")":raw;o+=`<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid rgba(37,37,80,.1)"><span style="color:var(--t2)">${s.icon} ${s.label}</span><b style="color:var(--tx)">${esc(v)}</b></div>`;});
   o+=`</div></div>`;return o;}
 
 let o=`<div style="padding:16px"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><button class="btn bgh" style="width:auto;padding:5px 12px;font-size:12px" onclick="doRefresh()">🔄</button><button class="btn bp" style="width:auto;padding:5px 12px;font-size:12px" onclick="shareWA()">📤 WhatsApp</button></div>`;
@@ -438,17 +440,17 @@ let o=`<div style="padding:16px"><div style="display:flex;justify-content:space-
 const myGrps=(S.user&&!S.user.isAdmin&&S.players[S.user.name])?(S.players[S.user.name].groups||[]):[];
 const grpTabs=myGrps.map(c=>{const g=(S.config.groups||{})[c];return g?{k:c,l:g.name}:null;}).filter(Boolean);
 if(grpTabs.length){o+=`<div style="display:flex;gap:4px;margin-bottom:10px;overflow-x:auto"><button class="stb ${S.rankTab==="general"?"a":""}" onclick="S.rankTab='general';render()" style="font-size:11px">🌍 General</button>`;
-grpTabs.forEach(t=>{o+=`<button class="stb ${S.rankTab===t.k?"a":""}" onclick="S.rankTab='${t.k}';render()" style="font-size:11px">👥 ${t.l}</button>`;});o+=`</div>`;}
+grpTabs.forEach(t=>{o+=`<button class="stb ${S.rankTab===t.k?"a":""}" onclick="S.rankTab=${jsArg(t.k)};render()" style="font-size:11px">👥 ${esc(t.l)}</button>`;});o+=`</div>`;}
 let showRanks=ranks;let grpInfo=null;
 if(S.rankTab!=="general"&&S.config.groups&&S.config.groups[S.rankTab]){grpInfo=S.config.groups[S.rankTab];showRanks=ranks.filter(r=>(S.players[r.n]?.groups||[]).includes(S.rankTab));}
-if(grpInfo){o+=`<div class="cd" style="padding:12px;text-align:center;margin-bottom:8px"><div style="font-size:16px;font-weight:800">👥 ${grpInfo.name}</div>`;if(grpInfo.prize)o+=`<div style="font-size:12px;color:var(--gd);margin-top:4px">🏆 1°: ${grpInfo.prize}</div>`;if(grpInfo.prize_last)o+=`<div style="font-size:12px;color:var(--rd);margin-top:2px">💀 Último: ${grpInfo.prize_last}</div>`;o+=`</div>`;}
+if(grpInfo){o+=`<div class="cd" style="padding:12px;text-align:center;margin-bottom:8px"><div style="font-size:16px;font-weight:800">👥 ${esc(grpInfo.name)}</div>`;if(grpInfo.prize)o+=`<div style="font-size:12px;color:var(--gd);margin-top:4px">🏆 1°: ${esc(grpInfo.prize)}</div>`;if(grpInfo.prize_last)o+=`<div style="font-size:12px;color:var(--rd);margin-top:2px">💀 Último: ${esc(grpInfo.prize_last)}</div>`;o+=`</div>`;}
 if(!hasR)o+=`<div class="cd" style="text-align:center"><div style="font-size:36px;margin-bottom:8px">⏳</div><div style="font-size:14px;font-weight:700;margin-bottom:4px">Sin resultados aún</div><div style="font-size:13px;color:var(--t2)">Cuando se carguen resultados, el ranking se calcula solo.</div></div>`;
 if(!showRanks.length)o+=`<div class="cd" style="text-align:center"><div style="font-size:36px;margin-bottom:8px">👥</div><div style="font-size:15px;font-weight:700">${grpInfo?"No hay miembros":"No hay jugadores"}</div></div>`;
 else{o+=`<div style="font-size:14px;font-weight:800;color:var(--t2);margin-bottom:8px">${showRanks.length} jugador${showRanks.length!==1?"es":""}</div>`;
 showRanks.forEach((r,pos)=>{
 const isMe=S.user&&r.n===S.user.name,bg=pos===0&&hasR?"background:linear-gradient(135deg,rgba(245,158,11,.07),var(--c1));border-color:rgba(245,158,11,.27)":"";
 const pC=pos<3&&hasR?["background:var(--gd);color:#000","background:#aaa;color:#000","background:#cd7f32;color:#000"][pos]:"background:var(--c2);color:var(--t3)";
-o+=`<div class="cd" style="padding:14px;cursor:pointer;${bg}" onclick="S.viewPlayer='${r.n}';render()"><div style="display:flex;align-items:center;gap:10px"><div style="width:32px;height:32px;border-radius:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:900;${pC}">${pos<3&&hasR?mds[pos]:pos+1}</div><div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.n}${isMe?' <span style="font-size:11px;color:var(--pl)">(vos)</span>':""}</div><div style="font-size:11px;color:var(--t3)">${r.c}% · ${r.p.det.e}🎯 ${r.p.det.r}✓ ${r.p.det.g}⚽</div></div><div style="text-align:right"><div style="font-size:22px;font-weight:900;color:${hasR?"var(--gd)":"var(--t3)"}">${r.p.total}</div><div style="font-size:10px;color:var(--t3)">pts →</div></div></div></div>`;});}
+o+=`<div class="cd" style="padding:14px;cursor:pointer;${bg}" onclick="S.viewPlayer=${jsArg(r.n)};render()"><div style="display:flex;align-items:center;gap:10px"><div style="width:32px;height:32px;border-radius:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:900;${pC}">${pos<3&&hasR?mds[pos]:pos+1}</div><div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.n)}${isMe?' <span style="font-size:11px;color:var(--pl)">(vos)</span>':""}</div><div style="font-size:11px;color:var(--t3)">${r.c}% · ${r.p.det.e}🎯 ${r.p.det.r}✓ ${r.p.det.g}⚽</div></div><div style="text-align:right"><div style="font-size:22px;font-weight:900;color:${hasR?"var(--gd)":"var(--t3)"}">${r.p.total}</div><div style="font-size:10px;color:var(--t3)">pts →</div></div></div></div>`;});}
 
 // Group rankings
 if(typeof renderGroupRankings==="function"&&S.user&&!S.user.isAdmin){
@@ -520,11 +522,11 @@ SPECIALS.forEach(cat=>{
     if(pv.team){
       const savedPv=parsePlayerVal(val);
       const selName=(savedPv.team===pv.team)?savedPv.name:"";
-      o+=`<select class="sel" style="border-color:rgba(245,158,11,.35);color:var(--gd)" onchange="const v='${pv.team}|'+this.value;setRSp('${cat.key}',v);S.adminRSpCache['${cat.key}']=v;">${playerNameOpts(pv.team,cat.posFilter,selName)}</select>`;
+      o+=`<select class="sel" style="border-color:rgba(245,158,11,.35);color:var(--gd)" onchange="const v=${jsArg(pv.team+"|")}+this.value;setRSp('${cat.key}',v);S.adminRSpCache['${cat.key}']=v;">${playerNameOpts(pv.team,cat.posFilter,selName)}</select>`;
     }
-    if(val&&val.includes("|")&&parsePlayerVal(val).name){const vp2=parsePlayerVal(val);o+=`<div style="font-size:11px;color:var(--gl);margin-top:4px">✓ ${vp2.name} (${vp2.team})</div>`;}
+    if(val&&val.includes("|")&&parsePlayerVal(val).name){const vp2=parsePlayerVal(val);o+=`<div style="font-size:11px;color:var(--gl);margin-top:4px">✓ ${esc(vp2.name)} (${esc(vp2.team)})</div>`;}
   }
-  else o+=`<input class="inp" type="${cat.type==="number"?"number":"text"}" value="${val}" placeholder="..." style="border-color:rgba(245,158,11,.35);color:var(--gd)" onchange="setRSp('${cat.key}',this.value)">`;
+  else o+=`<input class="inp" type="${cat.type==="number"?"number":"text"}" value="${esc(val)}" placeholder="..." style="border-color:rgba(245,158,11,.35);color:var(--gd)" onchange="setRSp('${cat.key}',this.value)">`;
   o+=`</div>`;});}
 
 if(S.adminTab==="friendgroups"){
@@ -537,7 +539,7 @@ if(typeof renderGroupsAdmin==="function"){
 if(S.adminTab==="players"){
 o+=`<div class="cd" style="padding:10px"><div style="font-size:12px;color:var(--t2)">👥 Jugadores</div></div>`;
 Object.entries(S.players).forEach(([name,data])=>{
-o+=`<div class="cd" style="padding:12px"><div style="display:flex;align-items:center;justify-content:space-between"><div><div style="font-size:14px;font-weight:700">👤 ${name}</div><div style="font-size:12px;color:var(--t3)">${comp(data)}%</div></div><button style="background:rgba(239,68,68,.12);border:none;border-radius:8px;padding:6px 12px;color:var(--rd);font-size:12px;font-weight:700;cursor:pointer" onclick="if(confirm('¿Borrar a ${name}?'))delPlayer('${name}')">🗑️</button></div></div>`;});
+o+=`<div class="cd" style="padding:12px"><div style="display:flex;align-items:center;justify-content:space-between"><div><div style="font-size:14px;font-weight:700">👤 ${esc(name)}</div><div style="font-size:12px;color:var(--t3)">${comp(data)}%</div></div><button style="background:rgba(239,68,68,.12);border:none;border-radius:8px;padding:6px 12px;color:var(--rd);font-size:12px;font-weight:700;cursor:pointer" onclick="if(confirm(${jsArg("¿Borrar a "+name+"?")}))delPlayer(${jsArg(name)})">🗑️</button></div></div>`;});
 if(!Object.keys(S.players).length)o+=`<div class="cd" style="text-align:center;color:var(--t3)">No hay jugadores</div>`;}
 o+=`</div>`;return o;}
 
