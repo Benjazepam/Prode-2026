@@ -346,6 +346,23 @@ o+=`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;backgroun
 
 GM[g].forEach((match,i)=>{
   const k=`${g}-${i}`,m=pd.matches[k]||{h:"",a:""},lk=isLocked(k);
+  const re=S.results.matches?.[k];
+  const hasReal=re&&re.h!==""&&re.a!=="";
+  const hasPred=m.h!==""&&m.a!=="";
+  // Calculate feedback for this match
+  let pts_earned=0,feedback="";
+  if(lk&&hasReal&&hasPred){
+    const pts=S.config.points;
+    const pH=+m.h,pA=+m.a,rH=+re.h,rA=+re.a;
+    if(pH===rH&&pA===rA){pts_earned=(pts.exacto||0)+(pts.resultado||0)+(pts.goles_equipo||0)*2;feedback="🎯";}
+    else{
+      const resOk=Math.sign(pH-pA)===Math.sign(rH-rA);
+      const g1Ok=pH===rH,g2Ok=pA===rA;
+      if(resOk){pts_earned+=pts.resultado||0;feedback="✅";}else{feedback="❌";}
+      if(g1Ok){pts_earned+=pts.goles_equipo||0;}
+      if(g2Ok){pts_earned+=pts.goles_equipo||0;}
+    }
+  }
   o+=`<div class="mr ${lk?"lk":""}"><div class="tl r"><span class="n">${match[0]}</span>${flag(match[0])}</div>`;
   o+=`<input class="sci" type="number" min="0" max="20" value="${m.h}" ${lk?"disabled":""} onchange="setScore('${k}','h',this.value)">`;
   o+=`<span style="color:var(--t3);font-weight:800;font-size:11px">vs</span>`;
@@ -353,8 +370,24 @@ GM[g].forEach((match,i)=>{
   o+=`<div class="tl">${flag(match[1])}<span class="n">${match[1]}</span></div>`;
   if(lk)o+=`<span class="lktag">🔒</span>`;
   o+=`</div>`;
-  if(lk){const ot=Object.entries(S.players).filter(([n])=>n!==S.user.name).map(([n,d])=>{const pm=d.matches?.[k];if(!pm||pm.h===""||pm.a==="")return null;return`<b>${esc(n)}</b>:${esc(pm.h)}-${esc(pm.a)}`;}).filter(Boolean);
-  if(ot.length)o+=`<div class="peek">👀 ${ot.join(" · ")}</div>`;}
+  // Real result + feedback row
+  if(lk){
+    if(hasReal){
+      o+=`<div style="display:flex;align-items:center;gap:6px;padding:2px 4px 4px;font-size:12px">`;
+      o+=`<span style="color:var(--t3);font-size:10px">Real:</span>`;
+      o+=`<span style="font-weight:800;color:var(--gd)">${re.h} - ${re.a}</span>`;
+      if(hasPred){
+        o+=`<span style="font-size:14px">${feedback}</span>`;
+        if(pts_earned>0)o+=`<span style="color:var(--gl);font-weight:700;font-size:11px">+${pts_earned} pts</span>`;
+        else if(feedback==="❌")o+=`<span style="color:var(--rd);font-size:11px">0 pts</span>`;
+      } else {
+        o+=`<span style="color:var(--t3);font-size:11px">sin predicción</span>`;
+      }
+      o+=`</div>`;
+    }
+    const ot=Object.entries(S.players).filter(([n])=>n!==S.user.name).map(([n,d])=>{const pm=d.matches?.[k];if(!pm||pm.h===""||pm.a==="")return null;return`<b>${esc(n)}</b>:${esc(pm.h)}-${esc(pm.a)}`;}).filter(Boolean);
+    if(ot.length)o+=`<div class="peek">👀 ${ot.join(" · ")}</div>`;
+  }
 });
 o+=`<div style="display:flex;gap:6px;margin-top:10px">`;
 if(g!=="A")o+=`<button class="btn bgh" style="flex:1;font-size:13px" onclick="S.ag='${String.fromCharCode(g.charCodeAt(0)-1)}';render()">← ${String.fromCharCode(g.charCodeAt(0)-1)}</button>`;
