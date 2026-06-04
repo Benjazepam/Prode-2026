@@ -67,18 +67,31 @@ const ISO={"México":"mx","Corea del Sur":"kr","Sudáfrica":"za","Chequia":"cz",
 function flag(t){const c=ISO[t];return c?`<img class="fg" src="https://flagcdn.com/w40/${c}.png" alt="${t}" onerror="this.style.display='none'">`:`<span style="font-size:14px">🏳️</span>`;}
 function flagSel(t){const c=ISO[t];return c?`https://flagcdn.com/w20/${c}.png`:"";}
 
-const GM={};Object.entries(GROUPS).forEach(([g,t])=>{GM[g]=[[t[0],t[2]],[t[1],t[3]],[t[0],t[1]],[t[2],t[3]],[t[0],t[3]],[t[1],t[2]]];});
+const GM={
+A:[["México","Sudáfrica"],["Corea del Sur","Chequia"],["Chequia","Sudáfrica"],["México","Corea del Sur"],["Chequia","México"],["Sudáfrica","Corea del Sur"]],
+B:[["Canadá","Bosnia-Herz."],["Qatar","Suiza"],["Suiza","Bosnia-Herz."],["Canadá","Qatar"],["Suiza","Canadá"],["Bosnia-Herz.","Qatar"]],
+C:[["Brasil","Marruecos"],["Haití","Escocia"],["Escocia","Marruecos"],["Brasil","Haití"],["Escocia","Brasil"],["Marruecos","Haití"]],
+D:[["EE.UU.","Paraguay"],["Australia","Turquía"],["EE.UU.","Australia"],["Turquía","Paraguay"],["Turquía","EE.UU."],["Paraguay","Australia"]],
+E:[["Alemania","Curazao"],["Costa de Marfil","Ecuador"],["Alemania","Costa de Marfil"],["Ecuador","Curazao"],["Curazao","Costa de Marfil"],["Ecuador","Alemania"]],
+F:[["Países Bajos","Japón"],["Suecia","Túnez"],["Países Bajos","Suecia"],["Túnez","Japón"],["Japón","Suecia"],["Túnez","Países Bajos"]],
+G:[["Bélgica","Egipto"],["Irán","Nueva Zelanda"],["Bélgica","Irán"],["Nueva Zelanda","Egipto"],["Egipto","Irán"],["Nueva Zelanda","Bélgica"]],
+H:[["España","Cabo Verde"],["Arabia Saudita","Uruguay"],["España","Arabia Saudita"],["Uruguay","Cabo Verde"],["Cabo Verde","Arabia Saudita"],["Uruguay","España"]],
+I:[["Francia","Senegal"],["Irak","Noruega"],["Francia","Irak"],["Noruega","Senegal"],["Noruega","Francia"],["Senegal","Irak"]],
+J:[["Argentina","Argelia"],["Austria","Jordania"],["Argentina","Austria"],["Jordania","Argelia"],["Argelia","Austria"],["Jordania","Argentina"]],
+K:[["Portugal","R.D. Congo"],["Uzbekistán","Colombia"],["Portugal","Uzbekistán"],["Colombia","R.D. Congo"],["Colombia","Portugal"],["R.D. Congo","Uzbekistán"]],
+L:[["Inglaterra","Croacia"],["Ghana","Panamá"],["Inglaterra","Ghana"],["Panamá","Croacia"],["Panamá","Inglaterra"],["Croacia","Ghana"]],
+};
 
 // Kickoff UTC times
 const KO={
-"A-0":"2026-06-11T19:00Z","A-1":"2026-06-12T02:00Z","A-2":"2026-06-19T03:00Z","A-3":"2026-06-18T16:00Z","A-4":"2026-06-25T01:00Z","A-5":"2026-06-25T01:00Z",
-"B-0":"2026-06-12T19:00Z","B-1":"2026-06-13T19:00Z","B-2":"2026-06-18T22:00Z","B-3":"2026-06-18T19:00Z","B-4":"2026-06-24T19:00Z","B-5":"2026-06-24T19:00Z",
-"C-0":"2026-06-13T22:00Z","C-1":"2026-06-14T01:00Z","C-2":"2026-06-19T22:00Z","C-3":"2026-06-20T01:00Z","C-4":"2026-06-24T22:00Z","C-5":"2026-06-24T22:00Z",
-"D-0":"2026-06-13T01:00Z","D-1":"2026-06-14T04:00Z","D-2":"2026-06-19T19:00Z","D-3":"2026-06-20T04:00Z","D-4":"2026-06-26T02:00Z","D-5":"2026-06-26T02:00Z",
+"A-0":"2026-06-11T19:00Z","A-1":"2026-06-12T02:00Z","A-2":"2026-06-18T16:00Z","A-3":"2026-06-19T01:00Z","A-4":"2026-06-25T01:00Z","A-5":"2026-06-25T01:00Z",
+"B-0":"2026-06-12T19:00Z","B-1":"2026-06-13T19:00Z","B-2":"2026-06-18T19:00Z","B-3":"2026-06-18T22:00Z","B-4":"2026-06-24T19:00Z","B-5":"2026-06-24T19:00Z",
+"C-0":"2026-06-13T22:00Z","C-1":"2026-06-14T01:00Z","C-2":"2026-06-19T22:00Z","C-3":"2026-06-20T00:30Z","C-4":"2026-06-24T22:00Z","C-5":"2026-06-24T22:00Z",
+"D-0":"2026-06-13T01:00Z","D-1":"2026-06-14T04:00Z","D-2":"2026-06-19T19:00Z","D-3":"2026-06-20T03:00Z","D-4":"2026-06-26T02:00Z","D-5":"2026-06-26T02:00Z",
 "E-0":"2026-06-14T17:00Z","E-1":"2026-06-14T23:00Z","E-2":"2026-06-20T20:00Z","E-3":"2026-06-21T00:00Z","E-4":"2026-06-25T20:00Z","E-5":"2026-06-25T20:00Z",
 "F-0":"2026-06-14T20:00Z","F-1":"2026-06-15T02:00Z","F-2":"2026-06-20T17:00Z","F-3":"2026-06-21T04:00Z","F-4":"2026-06-25T23:00Z","F-5":"2026-06-25T23:00Z",
-"G-0":"2026-06-15T22:00Z","G-1":"2026-06-16T04:00Z","G-2":"2026-06-21T19:00Z","G-3":"2026-06-22T01:00Z","G-4":"2026-06-27T03:00Z","G-5":"2026-06-27T03:00Z",
-"H-0":"2026-06-15T17:00Z","H-1":"2026-06-15T22:00Z","H-2":"2026-06-21T16:00Z","H-3":"2026-06-21T22:00Z","H-4":"2026-06-27T00:00Z","H-5":"2026-06-27T00:00Z",
+"G-0":"2026-06-15T19:00Z","G-1":"2026-06-16T01:00Z","G-2":"2026-06-21T19:00Z","G-3":"2026-06-22T01:00Z","G-4":"2026-06-27T03:00Z","G-5":"2026-06-27T03:00Z",
+"H-0":"2026-06-15T16:00Z","H-1":"2026-06-15T22:00Z","H-2":"2026-06-21T16:00Z","H-3":"2026-06-21T22:00Z","H-4":"2026-06-27T00:00Z","H-5":"2026-06-27T00:00Z",
 "I-0":"2026-06-16T19:00Z","I-1":"2026-06-16T22:00Z","I-2":"2026-06-22T21:00Z","I-3":"2026-06-23T00:00Z","I-4":"2026-06-26T19:00Z","I-5":"2026-06-26T19:00Z",
 "J-0":"2026-06-17T01:00Z","J-1":"2026-06-17T04:00Z","J-2":"2026-06-22T17:00Z","J-3":"2026-06-23T03:00Z","J-4":"2026-06-28T02:00Z","J-5":"2026-06-28T02:00Z",
 "K-0":"2026-06-17T17:00Z","K-1":"2026-06-18T02:00Z","K-2":"2026-06-23T17:00Z","K-3":"2026-06-24T02:00Z","K-4":"2026-06-27T23:30Z","K-5":"2026-06-27T23:30Z",
