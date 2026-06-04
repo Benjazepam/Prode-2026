@@ -143,16 +143,12 @@ async function autoFetchResults(GM, S, dbSet, onUpdate) {
     return;
   }
   
-  // Merge with existing results (don't overwrite manual entries)
+  // Fill only missing results (don't overwrite manual entries)
   let changed = false;
   Object.entries(mapped).forEach(([key, score]) => {
     const current = S.results.matches?.[key];
     if (!current || current.h === "" || current.a === "") {
       if (!S.results.matches) S.results.matches = {};
-      S.results.matches[key] = score;
-      changed = true;
-    } else if (current.h !== score.h || current.a !== score.a) {
-      // Update if API has different score (live update)
       S.results.matches[key] = score;
       changed = true;
     }
