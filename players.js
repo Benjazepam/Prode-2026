@@ -10,7 +10,7 @@
  */
 
 const SQUADS = {
-"Algeria": [
+"Argelia": [
   {name:"Oussama Benbot",pos:"GK"},{name:"Melvin Masstil",pos:"GK"},{name:"Luca Zidane",pos:"GK"},
   {name:"Achraf Abada",pos:"DF"},{name:"Rayan Ait Nouri",pos:"DF"},{name:"Zinedine Belaid",pos:"DF"},{name:"Rafik Belghali",pos:"DF"},{name:"Ramy Bensebaini",pos:"DF"},{name:"Samir Chergui",pos:"DF"},{name:"Jaouen Hadjam",pos:"DF"},{name:"Aissa Mandi",pos:"DF"},{name:"Mohamed Amine Tougai",pos:"DF"},
   {name:"Houssem Aouar",pos:"MF"},{name:"Nabil Bentaleb",pos:"MF"},{name:"Hicham Boudaoui",pos:"MF"},{name:"Fares Chaibi",pos:"MF"},{name:"Ibrahim Maza",pos:"MF"},{name:"Yassine Titraoui",pos:"MF"},{name:"Ramiz Zerrouki",pos:"MF"},
@@ -34,7 +34,7 @@ const SQUADS = {
   {name:"Christoph Baumgartner",pos:"MF"},{name:"Carney Chukwuemeka",pos:"MF"},{name:"Florian Grillitsch",pos:"MF"},{name:"Konrad Laimer",pos:"MF"},{name:"Marcel Sabitzer",pos:"MF"},{name:"Xaver Schlager",pos:"MF"},{name:"Romano Schmid",pos:"MF"},{name:"Alessandro Schopf",pos:"MF"},{name:"Nicolas Seiwald",pos:"MF"},{name:"Paul Wanner",pos:"MF"},{name:"Patrick Wimmer",pos:"MF"},
   {name:"Marko Arnautovic",pos:"FW"},{name:"Michael Gregoritsch",pos:"FW"},{name:"Sasa Kalajdzic",pos:"FW"}
 ],
-"Belgium": [
+"Bélgica": [
   {name:"Thibaut Courtois",pos:"GK"},{name:"Senne Lammens",pos:"GK"},{name:"Mike Penders",pos:"GK"},
   {name:"Timothy Castagne",pos:"DF"},{name:"Zeno Debast",pos:"DF"},{name:"Maxim De Cuyper",pos:"DF"},{name:"Koni De Winter",pos:"DF"},{name:"Brandon Mechele",pos:"DF"},{name:"Thomas Meunier",pos:"DF"},{name:"Nathan Ngoy",pos:"DF"},{name:"Joaquin Seys",pos:"DF"},{name:"Arthur Theate",pos:"DF"},
   {name:"Kevin De Bruyne",pos:"MF"},{name:"Amadou Onana",pos:"MF"},{name:"Nicolas Raskin",pos:"MF"},{name:"Youri Tielemans",pos:"MF"},{name:"Hans Vanaken",pos:"MF"},{name:"Axel Witsel",pos:"MF"},
@@ -255,6 +255,12 @@ const SQUADS = {
   {name:"Jens Castrop",pos:"DF"},{name:"Lee Hanbeom",pos:"DF"},{name:"Park Jinseob",pos:"DF"},{name:"Lee Kihyuk",pos:"DF"},{name:"Kim Minjae",pos:"DF"},{name:"Kim Moonhwan",pos:"DF"},{name:"Kim Taehyeon",pos:"DF"},{name:"Lee Taeseok",pos:"DF"},{name:"Seol Youngwoo",pos:"DF"},{name:"Cho Wije",pos:"DF"},
   {name:"Lee Donggyeong",pos:"MF"},{name:"Hwang Heechan",pos:"MF"},{name:"Yang Hyunjun",pos:"MF"},{name:"Hwang Inbeom",pos:"MF"},{name:"Lee Jaesung",pos:"MF"},{name:"Kim Jingyu",pos:"MF"},{name:"Eom Jisung",pos:"MF"},{name:"Bae Junho",pos:"MF"},{name:"Lee Kangin",pos:"MF"},{name:"Paik Seungho",pos:"MF"},
   {name:"Cho Guesung",pos:"FW"},{name:"Son Heungmin",pos:"FW"},{name:"Oh Hyeongyu",pos:"FW"}
+],
+"Suecia": [
+  {name:"Robin Olsen",pos:"GK"},{name:"Viktor Johansson",pos:"GK"},{name:"Kristoffer Nordfeldt",pos:"GK"},
+  {name:"Victor Lindelof",pos:"DF"},{name:"Gabriel Gudmundsson",pos:"DF"},{name:"Hjalmar Ekdal",pos:"DF"},{name:"Isak Hien",pos:"DF"},{name:"Emil Holm",pos:"DF"},{name:"Ludwig Augustinsson",pos:"DF"},{name:"Carl Starfelt",pos:"DF"},{name:"Linus Wahlqvist",pos:"DF"},{name:"Daniel Svensson",pos:"DF"},
+  {name:"Emil Forsberg",pos:"MF"},{name:"Dejan Kulusevski",pos:"MF"},{name:"Jens Cajuste",pos:"MF"},{name:"Hugo Larsson",pos:"MF"},{name:"Samuel Gustafson",pos:"MF"},{name:"Mattias Svanberg",pos:"MF"},{name:"Sebastian Nanasi",pos:"MF"},{name:"Lucas Bergvall",pos:"MF"},
+  {name:"Alexander Isak",pos:"FW"},{name:"Viktor Gyokeres",pos:"FW"},{name:"Anthony Elanga",pos:"FW"},{name:"Jesper Karlsson",pos:"FW"},{name:"Ken Sema",pos:"FW"},{name:"Jordan Larsson",pos:"FW"}
 ],
 "Suiza": [
   {name:"Marvin Keller",pos:"GK"},{name:"Gregor Kobel",pos:"GK"},{name:"Yvon Mvogo",pos:"GK"},
