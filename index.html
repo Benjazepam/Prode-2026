@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Súper Prode Mundial 2026</title>
 <meta name="theme-color" content="#080814">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -23,7 +23,7 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-:root{--bg:#080814;--c1:#111125;--c2:#1a1a34;--bd:#252550;--pr:#7c3aed;--pl:#a78bfa;--gn:#10b981;--gl:#34d399;--rd:#ef4444;--gd:#f59e0b;--tx:#eeeef8;--t2:#9898b8;--t3:#5a5a7a}
+:root{--bg:#080814;--c1:#111125;--c2:#1a1a34;--bd:#252550;--pr:#7c3aed;--pl:#a78bfa;--gn:#10b981;--gl:#34d399;--gl2:#34d399;--rd:#ef4444;--gd:#f59e0b;--tx:#eeeef8;--t2:#9898b8;--t3:#5a5a7a}
 body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--tx);max-width:500px;margin:0 auto;min-height:100dvh}
 input,select,button,textarea{font-family:inherit}button{cursor:pointer}
 .hdr{background:linear-gradient(135deg,var(--pr),#dc2626 55%,var(--gd));padding:26px 16px 14px;text-align:center;border-radius:0 0 20px 20px;position:relative}
@@ -56,7 +56,7 @@ input,select,button,textarea{font-family:inherit}button{cursor:pointer}
 <script>
 // ═══ SUPABASE ═══
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-async function dbGet(k){try{const{data}=await sb.from("prode_storage").select("value").eq("key",k).single();return data?JSON.parse(data.value):null;}catch{return null;}}
+async function dbGet(k){try{const{data}=await sb.from("prode_storage").select("value").eq("key",k).single();return data?JSON.parse(data.value):null;}catch(e){console.error(e);return null;}}
 async function dbSet(k,v){try{await sb.from("prode_storage").upsert({key:k,value:JSON.stringify(v),updated_at:new Date().toISOString()});}catch(e){console.error(e);}}
 
 // ═══ COUNTRIES + FLAGS (ISO codes for flagcdn.com) ═══
@@ -158,6 +158,7 @@ function calcTotalPts(pd){
   return gp;
 }
 function maxPM(){const p=S.config.points;return(p.resultado||0)+(p.goles_equipo||0)*2+(p.exacto||0);}
+function scoreVal(v){if(v==="")return"";const n=Number(v);if(!Number.isInteger(n)||n<0)return"";return String(Math.min(n,20));}
 
 // Upcoming unlocked matches count
 function pendingMatches(pd){if(!pd)return 0;let c=0;const now=new Date(),soon=new Date(now.getTime()+24*60*60*1000);
@@ -200,13 +201,13 @@ render();}
 
 async function doAdminLogin(){const p=document.getElementById("adminPassIn")?.value||"";const h=await sha256(p);if(h===AH){S.user={name:"Admin",isAdmin:true};S.screen="admin";S.showAdmin=false;await loadAll();render();}else toast("❌ Contraseña incorrecta");}
 
-async function setScore(k,si,v){if(isLocked(k))return;S.players[S.user.name].matches[k][si]=v;await dbSet("prode-players",S.players);render();}
+async function setScore(k,si,v){if(isLocked(k))return;S.players[S.user.name].matches[k][si]=scoreVal(v);await dbSet("prode-players",S.players);render();}
 async function setSpec(k,v){if(specialsLocked()){toast("🔒 Especiales bloqueadas — el mundial ya empezó");return;}S.players[S.user.name].specials[k]=v;await dbSet("prode-players",S.players);render();}
 async function setPt(k,v){S.config.points[k]=parseFloat(v)||0;await dbSet("prode-config",S.config);render();}
-async function setRes(k,si,v){if(!S.results.matches[k])S.results.matches[k]={h:"",a:""};S.results.matches[k][si]=v;await dbSet("prode-results",S.results);render();}
+async function setRes(k,si,v){if(!S.results.matches[k])S.results.matches[k]={h:"",a:""};S.results.matches[k][si]=scoreVal(v);await dbSet("prode-results",S.results);render();}
 async function setRSp(k,v){if(!S.results.specials)S.results.specials={};S.results.specials[k]=v;await dbSet("prode-results",S.results);render();}
-async function setKoScore(id,si,v){if(!S.players[S.user.name].knockout)S.players[S.user.name].knockout={};if(!S.players[S.user.name].knockout[id])S.players[S.user.name].knockout[id]={h:"",a:""};S.players[S.user.name].knockout[id][si]=v;await dbSet("prode-players",S.players);render();}
-async function setKoRes(id,si,v){if(!S.results.knockout)S.results.knockout={};if(!S.results.knockout[id])S.results.knockout[id]={h:"",a:""};S.results.knockout[id][si]=v;await dbSet("prode-results",S.results);render();}
+async function setKoScore(id,si,v){if(!S.players[S.user.name].knockout)S.players[S.user.name].knockout={};if(!S.players[S.user.name].knockout[id])S.players[S.user.name].knockout[id]={h:"",a:""};S.players[S.user.name].knockout[id][si]=scoreVal(v);await dbSet("prode-players",S.players);render();}
+async function setKoRes(id,si,v){if(!S.results.knockout)S.results.knockout={};if(!S.results.knockout[id])S.results.knockout[id]={h:"",a:""};S.results.knockout[id][si]=scoreVal(v);await dbSet("prode-results",S.results);render();}
 async function setKoPen(id,who){if(!S.results.knockout)S.results.knockout={};if(!S.results.knockout[id])S.results.knockout[id]={h:"",a:""};S.results.knockout[id].pen=who;await dbSet("prode-results",S.results);render();}
 async function delPlayer(n){delete S.players[n];await dbSet("prode-players",S.players);toast("Borrado: "+n);}
 // Group handlers
