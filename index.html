@@ -132,7 +132,7 @@ let pd_specials_cache={};
 function setSpecImmediate(k,v){pd_specials_cache[k]=v;render();}
 async function loadAll(){const[c,p,r]=await Promise.all([dbGet("prode-config"),dbGet("prode-players"),dbGet("prode-results")]);if(c)S.config=c;if(p)S.players=p;if(r)S.results=r;}
 function toast(m){S.toast=m;render();setTimeout(()=>{S.toast="";render();},2e3);}
-function comp(pd){if(!pd)return 0;const mF=Object.values(pd.matches||{}).filter(m=>m.h!==""&&m.a!=="").length;const sF=SPECIALS.filter(c=>(pd.specials||{})[c.key]&&pd.specials[c.key]!=="").length;return Math.round(((mF+sF)/(72+SPECIALS.length))*100);}
+function comp(pd){if(!pd)return 0;const mF=Object.values(pd.matches||{}).filter(m=>m.h!==""&&m.a!=="").length;const sF=SPECIALS.filter(c=>(pd.specials||{})[c.key]&&pd.specials[c.key]!=="").length;const koF=Object.values(pd.knockout||{}).filter(m=>m.h!==""&&m.a!=="").length;const koT=typeof ALL_KO_MATCHES!=="undefined"?ALL_KO_MATCHES.length:Object.keys(pd.knockout||{}).length;return Math.round(((mF+sF+koF)/(72+SPECIALS.length+koT))*100);}
 function calcPts(pd){if(!pd)return{total:0,det:{e:0,r:0,g:0}};const pts=S.config.points;let mP=0,sP=0,det={e:0,r:0,g:0};
 Object.entries(GM).forEach(([g,ms])=>{ms.forEach((_,i)=>{const k=`${g}-${i}`,pr=pd.matches?.[k],re=S.results.matches?.[k];if(!pr||!re||pr.h===""||pr.a===""||re.h===""||re.a==="")return;const pH=+pr.h,pA=+pr.a,rH=+re.h,rA=+re.a;if(pH===rH&&pA===rA){mP+=(pts.exacto||0)+(pts.resultado||0)+(pts.goles_equipo||0)*2;det.e++;det.r++;det.g+=2;return;}if(Math.sign(pH-pA)===Math.sign(rH-rA)){mP+=pts.resultado||0;det.r++;}if(pH===rH){mP+=pts.goles_equipo||0;det.g++;}if(pA===rA){mP+=pts.goles_equipo||0;det.g++;}});});
 const rSp=S.results.specials||{};SPECIALS.forEach(c=>{const pr=pd.specials?.[c.key],re=rSp[c.key];if(!pr||!re||pr===""||re==="")return;
@@ -205,7 +205,7 @@ async function setSpec(k,v){if(specialsLocked()){toast("🔒 Especiales bloquead
 async function setPt(k,v){S.config.points[k]=parseFloat(v)||0;await dbSet("prode-config",S.config);render();}
 async function setRes(k,si,v){if(!S.results.matches[k])S.results.matches[k]={h:"",a:""};S.results.matches[k][si]=v;await dbSet("prode-results",S.results);render();}
 async function setRSp(k,v){if(!S.results.specials)S.results.specials={};S.results.specials[k]=v;await dbSet("prode-results",S.results);render();}
-async function setKoScore(id,si,v){if(!S.players[S.user.name].knockout)S.players[S.user.name].knockout={};if(!S.players[S.user.name].knockout[id])S.players[S.user.name].knockout[id]={h:"",a:""};S.players[S.user.name].knockout[id][si]=v;await dbSet("prode-players",S.players);render();}
+async function setKoScore(id,si,v){if(typeof isKoLocked==="function"&&isKoLocked(id,TEST_MODE))return;if(!S.players[S.user.name].knockout)S.players[S.user.name].knockout={};if(!S.players[S.user.name].knockout[id])S.players[S.user.name].knockout[id]={h:"",a:""};S.players[S.user.name].knockout[id][si]=v;await dbSet("prode-players",S.players);render();}
 async function setKoRes(id,si,v){if(!S.results.knockout)S.results.knockout={};if(!S.results.knockout[id])S.results.knockout[id]={h:"",a:""};S.results.knockout[id][si]=v;await dbSet("prode-results",S.results);render();}
 async function setKoPen(id,who){if(!S.results.knockout)S.results.knockout={};if(!S.results.knockout[id])S.results.knockout[id]={h:"",a:""};S.results.knockout[id].pen=who;await dbSet("prode-results",S.results);render();}
 async function delPlayer(n){delete S.players[n];await dbSet("prode-players",S.players);toast("Borrado: "+n);}
@@ -279,7 +279,8 @@ function go(s){S.screen=s;S.viewPlayer=null;if(s==="ranking"||s==="admin")loadAl
 function toggleTest(){TEST_MODE=!TEST_MODE;toast(TEST_MODE?"🧪 Modo test ON: todos los partidos bloqueados":"✅ Modo test OFF");render();}
 
 function shareWA(){
-  const ranks=Object.entries(S.players).map(([n,d])=>({n,p:calcPts(d)})).sort((a,b)=>b.p.total-a.p.total);
+  const calcFn=typeof calcTotalPts==="function"?calcTotalPts:calcPts;
+  const ranks=Object.entries(S.players).map(([n,d])=>({n,p:calcFn(d)})).sort((a,b)=>b.p.total-a.p.total);
   let msg="⚽🏆 *Ranking Prode Mundial 2026*\n\n";
   const mds=["🥇","🥈","🥉"];
   ranks.forEach((r,i)=>{msg+=`${i<3?mds[i]:(i+1)+"."} ${r.n}: ${r.p.total} pts\n`;});
@@ -426,7 +427,7 @@ const ranks=Object.entries(S.players).map(([n,d])=>({n,d,p:typeof calcTotalPts==
 
 // View player detail
 if(S.viewPlayer&&S.players[S.viewPlayer]){
-  const vp=S.players[S.viewPlayer],vpts=calcPts(vp);
+  const vp=S.players[S.viewPlayer],vpts=typeof calcTotalPts==="function"?calcTotalPts(vp):calcPts(vp);
   let o=`<div style="padding:16px"><button class="btn bgh" style="margin-bottom:10px;width:auto;padding:6px 14px;font-size:12px" onclick="S.viewPlayer=null;render()">← Volver al ranking</button>`;
   o+=`<div class="cd"><div style="font-size:18px;font-weight:800;margin-bottom:4px">👤 ${S.viewPlayer}</div><div style="font-size:13px;color:var(--t2)">Completado: ${comp(vp)}% · Total: <b style="color:var(--gd)">${vpts.total} pts</b></div><div style="font-size:12px;color:var(--t3);margin-top:4px">${vpts.det.e} exactos 🎯 · ${vpts.det.r} resultados ✓ · ${vpts.det.g} goles ⚽</div></div>`;
   o+=`<div class="cd"><div style="font-size:14px;font-weight:800;margin-bottom:8px">🏅 Predicciones especiales</div>`;
