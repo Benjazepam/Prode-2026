@@ -33,7 +33,7 @@ const R32_BRACKET = [
   {id:"R32-5", src:["1I","3CDFGH"],ko:"2026-06-30T21:00Z",label:"R32 #6"},
   {id:"R32-6", src:["1A","3CEFHI"],ko:"2026-07-01T01:00Z",label:"R32 #7"},
   {id:"R32-7", src:["1L","3EHIJK"],ko:"2026-07-01T16:00Z",label:"R32 #8"},
-  {id:"R32-8", src:["1G","3AEHI J"],ko:"2026-07-01T20:00Z",label:"R32 #9"},
+  {id:"R32-8", src:["1G","3AEHIJ"], ko:"2026-07-01T20:00Z",label:"R32 #9"},
   {id:"R32-9", src:["1D","3BEFIJ"],ko:"2026-07-02T00:00Z",label:"R32 #10"},
   {id:"R32-10",src:["1H","2J"],   ko:"2026-07-02T19:00Z", label:"R32 #11"},
   {id:"R32-11",src:["2K","2L"],   ko:"2026-07-02T23:00Z", label:"R32 #12"},
@@ -45,30 +45,30 @@ const R32_BRACKET = [
 
 // R16 matches: each fed by winners of 2 R32 matches
 const R16_BRACKET = [
-  {id:"R16-0", src:["R32-0","R32-1"],  ko:"2026-07-05T17:00Z", label:"8vos #1"},
-  {id:"R16-1", src:["R32-2","R32-3"],  ko:"2026-07-05T21:00Z", label:"8vos #2"},
-  {id:"R16-2", src:["R32-4","R32-5"],  ko:"2026-07-06T17:00Z", label:"8vos #3"},
-  {id:"R16-3", src:["R32-6","R32-7"],  ko:"2026-07-06T21:00Z", label:"8vos #4"},
-  {id:"R16-4", src:["R32-8","R32-9"],  ko:"2026-07-07T17:00Z", label:"8vos #5"},
-  {id:"R16-5", src:["R32-10","R32-11"],ko:"2026-07-07T21:00Z", label:"8vos #6"},
-  {id:"R16-6", src:["R32-12","R32-13"],ko:"2026-07-08T17:00Z", label:"8vos #7"},
-  {id:"R16-7", src:["R32-14","R32-15"],ko:"2026-07-08T21:00Z", label:"8vos #8"},
+  {id:"R16-0", src:["R32-2","R32-5"],  ko:"2026-07-04T21:00Z", label:"8vos #89"},
+  {id:"R16-1", src:["R32-0","R32-3"],  ko:"2026-07-04T17:00Z", label:"8vos #90"},
+  {id:"R16-2", src:["R32-1","R32-4"],  ko:"2026-07-05T20:00Z", label:"8vos #91"},
+  {id:"R16-3", src:["R32-6","R32-7"],  ko:"2026-07-06T00:00Z", label:"8vos #92"},
+  {id:"R16-4", src:["R32-11","R32-10"],ko:"2026-07-06T19:00Z", label:"8vos #93"},
+  {id:"R16-5", src:["R32-9","R32-8"],  ko:"2026-07-07T00:00Z", label:"8vos #94"},
+  {id:"R16-6", src:["R32-14","R32-13"],ko:"2026-07-07T16:00Z", label:"8vos #95"},
+  {id:"R16-7", src:["R32-12","R32-15"],ko:"2026-07-07T20:00Z", label:"8vos #96"},
 ];
 
 const QF_BRACKET = [
-  {id:"QF-0", src:["R16-0","R16-1"], ko:"2026-07-11T17:00Z", label:"4tos #1"},
-  {id:"QF-1", src:["R16-2","R16-3"], ko:"2026-07-11T21:00Z", label:"4tos #2"},
-  {id:"QF-2", src:["R16-4","R16-5"], ko:"2026-07-12T17:00Z", label:"4tos #3"},
-  {id:"QF-3", src:["R16-6","R16-7"], ko:"2026-07-12T21:00Z", label:"4tos #4"},
+  {id:"QF-0", src:["R16-0","R16-1"], ko:"2026-07-09T20:00Z", label:"4tos #97"},
+  {id:"QF-1", src:["R16-4","R16-5"], ko:"2026-07-10T19:00Z", label:"4tos #98"},
+  {id:"QF-2", src:["R16-2","R16-3"], ko:"2026-07-11T21:00Z", label:"4tos #99"},
+  {id:"QF-3", src:["R16-6","R16-7"], ko:"2026-07-12T01:00Z", label:"4tos #100"},
 ];
 
 const SF_BRACKET = [
-  {id:"SF-0", src:["QF-0","QF-1"], ko:"2026-07-15T21:00Z", label:"Semi #1"},
-  {id:"SF-1", src:["QF-2","QF-3"], ko:"2026-07-16T21:00Z", label:"Semi #2"},
+  {id:"SF-0", src:["QF-0","QF-1"], ko:"2026-07-14T19:00Z", label:"Semi #101"},
+  {id:"SF-1", src:["QF-2","QF-3"], ko:"2026-07-15T19:00Z", label:"Semi #102"},
 ];
 
 const THIRD_BRACKET = [
-  {id:"3RD-0", src:["SF-0L","SF-1L"], ko:"2026-07-19T17:00Z", label:"3er puesto"},
+  {id:"3RD-0", src:["SF-0L","SF-1L"], ko:"2026-07-18T21:00Z", label:"3er puesto"},
 ];
 
 const FINAL_BRACKET = [
@@ -122,6 +122,10 @@ function computeGroupStandings(GM, realMatches) {
     const sorted = Object.values(teams).sort((a, b) => 
       b.pts - a.pts || b.gd - a.gd || b.gf - a.gf
     );
+    sorted.complete = matches.every((_, i) => {
+      const r = realMatches?.[`${g}-${i}`];
+      return r && r.h !== "" && r.a !== "";
+    });
     
     standings[g] = sorted;
   });
@@ -145,10 +149,52 @@ function bestThirdPlaced(standings) {
   return thirds; // return all 12, rendering will highlight top 8
 }
 
+function allGroupsComplete(standings) {
+  return Object.values(standings).every(st => st.complete);
+}
+
+function bestThirdSlots() {
+  const slots = [];
+  R32_BRACKET.forEach(m => {
+    m.src.forEach((src, i) => {
+      const match = src.match(/^3([A-L]+)$/);
+      if (match) slots.push({key:`${m.id}-${i}`, groups:match[1].split("")});
+    });
+  });
+  return slots;
+}
+
+function assignBestThirds(standings, bestThirds) {
+  if (!allGroupsComplete(standings)) return {};
+  const thirds = bestThirds.slice(0, 8);
+  const slots = bestThirdSlots().sort((a, b) =>
+    a.groups.filter(g => thirds.some(t => t.group === g)).length -
+    b.groups.filter(g => thirds.some(t => t.group === g)).length
+  );
+  const assigned = {};
+  const used = new Set();
+  
+  function fill(i) {
+    if (i >= slots.length) return true;
+    const slot = slots[i];
+    for (const team of thirds) {
+      if (used.has(team.group) || !slot.groups.includes(team.group)) continue;
+      assigned[slot.key] = team.name;
+      used.add(team.group);
+      if (fill(i + 1)) return true;
+      used.delete(team.group);
+      delete assigned[slot.key];
+    }
+    return false;
+  }
+  
+  return fill(0) ? assigned : {};
+}
+
 // ═══ RESOLVE TEAM FOR A KNOCKOUT MATCH SLOT ═══
 // src like "1A" = 1st of group A, "2B" = 2nd of group B, "3ABCDF" = best 3rd from those groups
 // For later rounds: "R32-0" = winner of R32 match 0, "SF-0L" = loser of SF match 0
-function resolveTeam(src, standings, bestThirds, realKnockout) {
+function resolveTeam(src, standings, bestThirds, realKnockout, thirdAssignments, matchId, slotIndex) {
   if (!src) return null;
   
   // Winner of a previous KO match
@@ -159,8 +205,8 @@ function resolveTeam(src, standings, bestThirds, realKnockout) {
     // Find the teams that played
     const m = ALL_KO_MATCHES.find(x => x.id === src);
     if (!m) return null;
-    const t1 = resolveTeam(m.src[0], standings, bestThirds, realKnockout);
-    const t2 = resolveTeam(m.src[1], standings, bestThirds, realKnockout);
+    const t1 = resolveTeam(m.src[0], standings, bestThirds, realKnockout, thirdAssignments, m.id, 0);
+    const t2 = resolveTeam(m.src[1], standings, bestThirds, realKnockout, thirdAssignments, m.id, 1);
     if (!t1 || !t2) return null;
     
     if (h > a) return t1;
@@ -179,8 +225,8 @@ function resolveTeam(src, standings, bestThirds, realKnockout) {
     const h = +result.h, a = +result.a;
     const m = ALL_KO_MATCHES.find(x => x.id === sfId);
     if (!m) return null;
-    const t1 = resolveTeam(m.src[0], standings, bestThirds, realKnockout);
-    const t2 = resolveTeam(m.src[1], standings, bestThirds, realKnockout);
+    const t1 = resolveTeam(m.src[0], standings, bestThirds, realKnockout, thirdAssignments, m.id, 0);
+    const t2 = resolveTeam(m.src[1], standings, bestThirds, realKnockout, thirdAssignments, m.id, 1);
     if (!t1 || !t2) return null;
     if (h > a) return t2; // loser
     if (a > h) return t1;
@@ -195,21 +241,14 @@ function resolveTeam(src, standings, bestThirds, realKnockout) {
     const pos = parseInt(posMatch[1]) - 1; // 0-indexed
     const grp = posMatch[2];
     const st = standings[grp];
-    if (!st || !st[pos]) return null;
-    // Always show current position (even before matches start)
+    if (!st || !st.complete || !st[pos]) return null;
     return st[pos].name;
   }
   
   // Best 3rd: "3ABCDF" — pick from bestThirds that came from one of those groups
   const thirdMatch = src.match(/^3([A-L]+)$/);
   if (thirdMatch) {
-    const possibleGroups = thirdMatch[1].split("");
-    // FIFA has a specific table for which 3rd-placed team goes where based on
-    // which 8 groups produce the best thirds. For simplicity, we pick the
-    // highest-ranked 3rd from the possible groups that hasn't been assigned yet.
-    const available = bestThirds.filter(t => possibleGroups.includes(t.group));
-    if (available.length > 0) return available[0].name;
-    return null;
+    return thirdAssignments[`${matchId}-${slotIndex}`] || null;
   }
   
   return null;
@@ -218,10 +257,11 @@ function resolveTeam(src, standings, bestThirds, realKnockout) {
 // ═══ GET ALL KO MATCH TEAMS (resolved) ═══
 function getKoTeams(standings, bestThirds, realKnockout) {
   const teams = {};
+  const thirdAssignments = assignBestThirds(standings, bestThirds);
   ALL_KO_MATCHES.forEach(m => {
     teams[m.id] = {
-      home: resolveTeam(m.src[0], standings, bestThirds, realKnockout),
-      away: resolveTeam(m.src[1], standings, bestThirds, realKnockout),
+      home: resolveTeam(m.src[0], standings, bestThirds, realKnockout, thirdAssignments, m.id, 0),
+      away: resolveTeam(m.src[1], standings, bestThirds, realKnockout, thirdAssignments, m.id, 1),
     };
   });
   return teams;
