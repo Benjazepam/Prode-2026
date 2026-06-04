@@ -461,10 +461,12 @@ function renderScorersAdmin(S, flag) {
   o += `<input class="inp" id="scrGoals" type="number" min="0" placeholder="Goles" style="margin-bottom:8px">`;
   o += `<button class="btn bp" onclick="addScorer()">Agregar</button></div>`;
   if (scorers.length) {
-    const sorted = [...scorers].sort((a, b) => (b.goals||0) - (a.goals||0));
+    const sorted = scorers
+      .map((scorer, idx) => ({scorer, idx}))
+      .sort((a, b) => (b.scorer.goals||0) - (a.scorer.goals||0));
     o += `<div class="cd" style="padding:10px">`;
-    sorted.forEach((s, i) => {
-      o += `<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(37,37,80,.08)"><div style="flex:1;font-size:12px;font-weight:700">${s.name} ${s.team?flag(s.team):''} — <b style="color:var(--gd)">${s.goals||0}</b></div><input type="number" min="0" value="${s.goals||0}" style="width:45px;height:26px;text-align:center;font-size:12px;font-weight:800;border-radius:6px;border:1px solid var(--bd);background:var(--bg);color:var(--gd);outline:none" onchange="updateScorerGoals(${i},this.value)"><button style="background:none;border:none;color:var(--rd);font-size:11px;cursor:pointer;font-weight:700" onclick="removeScorer(${i})">✕</button></div>`;
+    sorted.forEach(({scorer: s, idx}) => {
+      o += `<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(37,37,80,.08)"><div style="flex:1;font-size:12px;font-weight:700">${s.name} ${s.team?flag(s.team):''} — <b style="color:var(--gd)">${s.goals||0}</b></div><input type="number" min="0" value="${s.goals||0}" style="width:45px;height:26px;text-align:center;font-size:12px;font-weight:800;border-radius:6px;border:1px solid var(--bd);background:var(--bg);color:var(--gd);outline:none" onchange="updateScorerGoals(${idx},this.value)"><button style="background:none;border:none;color:var(--rd);font-size:11px;cursor:pointer;font-weight:700" onclick="removeScorer(${idx})">✕</button></div>`;
     });
     o += `</div>`;
   }
