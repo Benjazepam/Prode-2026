@@ -304,7 +304,21 @@ render();}
 
 async function doAdminLogin(){const p=document.getElementById("adminPassIn")?.value||"";const h=await sha256(p);if(h===AH){S.user={name:"Admin",isAdmin:true};S.screen="admin";S.showAdmin=false;await loadAll();render();}else toast("❌ Contraseña incorrecta");}
 
-async function setScore(k,si,v){if(isLocked(k))return;S.players[S.user.name].matches[k][si]=v;await dbSet("prode-players",S.players);render();}
+async function setScore(k,si,v){
+  if(isLocked(k))return;
+  S.players[S.user.name].matches[k][si]=v;
+  
+  // Guardamos en la base de datos en segundo plano (sin 'await' ni 'render()')
+  dbSet("prode-players", S.players);
+  
+  // Actualizamos la barra de porcentaje manualmente para no redibujar toda la pantalla
+  const pd = S.players[S.user.name];
+  const pct = comp(pd);
+  const pt = document.getElementById('pctTxt');
+  const pb = document.getElementById('pctBar');
+  if(pt) { pt.innerText = pct + '%'; pt.style.color = pct === 100 ? 'var(--gl)' : 'var(--pl)'; }
+  if(pb) { pb.style.width = pct + '%'; pb.style.background = pct === 100 ? 'var(--gn)' : 'linear-gradient(90deg,var(--pr),var(--pl))'; }
+}
 async function setSpec(k,v){if(specialsLocked()){toast("🔒 Especiales bloqueadas — el mundial ya empezó");return;}S.players[S.user.name].specials[k]=v;await dbSet("prode-players",S.players);render();}
 async function setPt(k,v){S.config.points[k]=parseFloat(v)||0;await dbSet("prode-config",S.config);render();}
 async function setRes(k,si,v){if(!S.results.matches[k])S.results.matches[k]={h:"",a:""};S.results.matches[k][si]=v;await dbSet("prode-results",S.results);render();}
@@ -436,7 +450,7 @@ const pd=S.players[S.user.name]||emptyP(),pct=comp(pd),g=S.ag;
 const gd=gr=>GM[gr].every((_,i)=>{const m=pd.matches[`${gr}-${i}`];return m&&m.h!==""&&m.a!=="";});
 const pend=pendingMatches(pd);
 
-let o=`<div style="padding:12px 16px"><div class="cd" style="margin-bottom:0"><div style="display:flex;align-items:center;gap:10px"><div style="font-size:18px">👤</div><div style="flex:1"><div style="font-size:15px;font-weight:800">${esc(S.user.name)}</div><div style="display:flex;align-items:center;gap:8px;margin-top:4px"><div class="pb"><div class="pf" style="width:${pct}%;background:${pct===100?"var(--gn)":"linear-gradient(90deg,var(--pr),var(--pl))"}"></div></div><span style="font-size:13px;font-weight:800;color:${pct===100?"var(--gl)":"var(--pl)"}">${pct}%</span></div></div></div></div></div>`;
+let o=`<div style="padding:12px 16px"><div class="cd" style="margin-bottom:0"><div style="display:flex;align-items:center;gap:10px"><div style="font-size:18px">👤</div><div style="flex:1"><div style="font-size:15px;font-weight:800">${esc(S.user.name)}</div><div style="display:flex;align-items:center;gap:8px;margin-top:4px"><div class="pb"><div id="pctBar" class="pf" style="width:${pct}%;background:${pct===100?"var(--gn)":"linear-gradient(90deg,var(--pr),var(--pl))"}"></div></div><span id="pctTxt" style="font-size:13px;font-weight:800;color:${pct===100?"var(--gl)":"var(--pl)"}">${pct}%</span></div></div></div></div></div>`;
 
 if(pend>0)o+=`<div style="padding:0 16px"><div class="warn">⚠️ Tenés ${pend} partido${pend>1?"s":""} sin completar que se juega${pend>1?"n":""} en las próximas 24hs</div></div>`;
 
