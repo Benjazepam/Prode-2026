@@ -308,15 +308,34 @@ async function checkApi(){
 }
 
 // ═══ HANDLERS ═══
-async function doLogin(){const name=document.getElementById("nameIn")?.value?.trim();if(!name)return;
-if(S.players[name]){const pin=prompt("👤 \""+name+"\" ya existe.\nIngresá tu PIN para entrar:");if(!pin)return;const h=await sha256(pin);if(S.players[name].pin!==h){toast("❌ PIN incorrecto");return;}}
-else{const pin=prompt("¡Hola "+name+"! Creá un PIN (mín 3 dígitos) para proteger tu prode:");if(!pin||pin.length<3){toast("❌ PIN muy corto (mín 3)");return;}const h=await sha256(pin);const np=emptyP();np.pin=h;S.players[name]=np;await dbSet("prode-players",S.players);}
-S.user={name,isAdmin:false};S.screen="play";
-// Sync specials cache from saved data
-pd_specials_cache={};
-const savedSpecials=S.players[name]?.specials||{};
-Object.keys(savedSpecials).forEach(k=>{pd_specials_cache[k]=savedSpecials[k];});
-render();}
+async function doLogin(){
+  const name=document.getElementById("nameIn")?.value?.trim();
+  if(!name)return;
+  
+  // PARCHE VITAL: Descargar la base fresca ANTES de revisar si existe o crearlo
+  await loadAll();
+
+  if(S.players[name]){
+    const pin=prompt("👤 \""+name+"\" ya existe.\nIngresá tu PIN para entrar:");
+    if(!pin)return;
+    const h=await sha256(pin);
+    if(S.players[name].pin!==h){toast("❌ PIN incorrecto");return;}
+  }
+  else{
+    const pin=prompt("¡Hola "+name+"! Creá un PIN (mín 3 dígitos) para proteger tu prode:");
+    if(!pin||pin.length<3){toast("❌ PIN muy corto (mín 3)");return;}
+    const h=await sha256(pin);
+    const np=emptyP();
+    np.pin=h;
+    S.players[name]=np;
+    await dbSet("prode-players",S.players);
+  }
+  S.user={name,isAdmin:false};S.screen="play";
+  pd_specials_cache={};
+  const savedSpecials=S.players[name]?.specials||{};
+  Object.keys(savedSpecials).forEach(k=>{pd_specials_cache[k]=savedSpecials[k];});
+  render();
+}
 
 async function doAdminLogin(){const p=document.getElementById("adminPassIn")?.value||"";const h=await sha256(p);if(h===AH){S.user={name:"Admin",isAdmin:true};S.screen="admin";S.showAdmin=false;await loadAll();render();}else toast("❌ Contraseña incorrecta");}
 
@@ -332,14 +351,6 @@ function updateProgressSilent() {
 async function setScore(k,si,v){
   if(isLocked(k))return;
   S.players[S.user.name].matches[k][si]=v;
-  updateProgressSilent(); // Actualiza la barrita
-  saveMyPlayer(); // Guarda de forma segura
-}
-
-async function setKoScore(id,si,v){
-  if(!S.players[S.user.name].knockout)S.players[S.user.name].knockout={};
-  if(!S.players[S.user.name].knockout[id])S.players[S.user.name].knockout[id]={h:"",a:""};
-  S.players[S.user.name].knockout[id][si]=v;
   updateProgressSilent(); // Actualiza la barrita
   saveMyPlayer(); // Guarda de forma segura
 }
