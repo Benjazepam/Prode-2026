@@ -58,6 +58,22 @@ input,select,button,textarea{font-family:inherit}button{cursor:pointer}
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 async function dbGet(k){try{const{data}=await sb.from("prode_storage").select("value").eq("key",k).single();return data?JSON.parse(data.value):null;}catch{return null;}}
 async function dbSet(k,v){try{await sb.from("prode_storage").upsert({key:k,value:JSON.stringify(v),updated_at:new Date().toISOString()});}catch(e){console.error(e);}}
+async function saveMyPlayer() {
+  try {
+    // 1. Baja la lista más fresca de la base de datos
+    const latest = await dbGet("prode-players");
+    if (latest) {
+      // 2. Mete SOLO los datos de este usuario en la lista fresca
+      latest[S.user.name] = S.players[S.user.name];
+      // 3. Actualiza la memoria local
+      S.players = latest;
+    }
+    // 4. Sube la lista combinada sin borrar a nadie
+    await dbSet("prode-players", S.players);
+  } catch (e) {
+    console.error("Error al guardar:", e);
+  }
+}
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function jsArg(v){return esc(JSON.stringify(String(v??"")));}
 
@@ -313,12 +329,36 @@ function updateProgressSilent() {
   if(bar) { bar.style.width = pct + '%'; bar.style.background = pct === 100 ? "var(--gn)" : "linear-gradient(90deg,var(--pr),var(--pl))"; }
   if(txt) { txt.innerText = pct + '%'; txt.style.color = pct === 100 ? "var(--gl)" : "var(--pl)"; }
 }
-async function setScore(k,si,v){if(isLocked(k))return;S.players[S.user.name].matches[k][si]=v;dbSet("prode-players",S.players);updateProgressSilent();}
-async function setSpec(k,v){if(specialsLocked()){toast("🔒 Especiales bloqueadas — el mundial ya empezó");return;}S.players[S.user.name].specials[k]=v;await dbSet("prode-players",S.players);render();}
+async function setScore(k,si,v){
+  if(isLocked(k))return;
+  S.players[S.user.name].matches[k][si]=v;
+  updateProgressSilent(); // Actualiza la barrita
+  saveMyPlayer(); // Guarda de forma segura
+}
+
+async function setKoScore(id,si,v){
+  if(!S.players[S.user.name].knockout)S.players[S.user.name].knockout={};
+  if(!S.players[S.user.name].knockout[id])S.players[S.user.name].knockout[id]={h:"",a:""};
+  S.players[S.user.name].knockout[id][si]=v;
+  updateProgressSilent(); // Actualiza la barrita
+  saveMyPlayer(); // Guarda de forma segura
+}
+async function setSpec(k,v){
+  if(specialsLocked()){toast("🔒 Especiales bloqueadas — el mundial ya empezó");return;}
+  S.players[S.user.name].specials[k]=v;
+  await saveMyPlayer();
+  render();
+}
 async function setPt(k,v){S.config.points[k]=parseFloat(v)||0;await dbSet("prode-config",S.config);render();}
 async function setRes(k,si,v){if(!S.results.matches[k])S.results.matches[k]={h:"",a:""};S.results.matches[k][si]=v;await dbSet("prode-results",S.results);render();}
 async function setRSp(k,v){if(!S.results.specials)S.results.specials={};S.results.specials[k]=v;await dbSet("prode-results",S.results);render();}
-async function setKoScore(id,si,v){if(!S.players[S.user.name].knockout)S.players[S.user.name].knockout={};if(!S.players[S.user.name].knockout[id])S.players[S.user.name].knockout[id]={h:"",a:""};S.players[S.user.name].knockout[id][si]=v;dbSet("prode-players",S.players);updateProgressSilent();}
+async function setKoScore(id,si,v){
+  if(!S.players[S.user.name].knockout)S.players[S.user.name].knockout={};
+  if(!S.players[S.user.name].knockout[id])S.players[S.user.name].knockout[id]={h:"",a:""};
+  S.players[S.user.name].knockout[id][si]=v;
+  updateProgressSilent(); // Actualiza la barrita
+  saveMyPlayer(); // Guarda de forma segura
+}
 async function setKoRes(id,si,v){if(!S.results.knockout)S.results.knockout={};if(!S.results.knockout[id])S.results.knockout[id]={h:"",a:""};S.results.knockout[id][si]=v;await dbSet("prode-results",S.results);render();}
 async function setKoPen(id,who){if(!S.results.knockout)S.results.knockout={};if(!S.results.knockout[id])S.results.knockout[id]={h:"",a:""};S.results.knockout[id].pen=who;await dbSet("prode-results",S.results);render();}
 async function delPlayer(n){delete S.players[n];await dbSet("prode-players",S.players);toast("Borrado: "+n);}
