@@ -199,14 +199,11 @@ async function autoFetchResults(GM, S, dbSet, onUpdate) {
     if (data) parsed = parseOpenFootball(data);
   }
 
-  const mapped = mapToKeys(parsed, GM);
-  if (Object.keys(mapped).length === 0) {
-    console.log("[API] No finished group matches found");
-    return;
-  }
-
   let changed = false;
-  Object.entries(mapped).forEach(([key, score]) => {
+
+  // 1. ACTUALIZAR GRUPOS
+  const mappedGroups = mapToKeys(parsed, GM);
+  Object.entries(mappedGroups).forEach(([key, score]) => {
     const current = S.results.matches?.[key];
     if (!current || current.h === "" || current.a === "") {
       if (!S.results.matches) S.results.matches = {};
@@ -218,15 +215,40 @@ async function autoFetchResults(GM, S, dbSet, onUpdate) {
     }
   });
 
+  // 2. ACTUALIZAR ELIMINATORIAS (KNOCKOUTS)
+  if (typeof computeGroupStandings === "function" && typeof ALL_KO_MATCHES !== "undefined") {
+    // Calculamos las posiciones actuales para saber qué países juegan cada cruce
+    const standings = computeGroupStandings(GM, S.results.matches);
+    const bestThirds = bestThirdPlaced(standings);
+    const koTeams = getKoTeams(standings, bestThirds, S.results.knockout || {});
+    
+    // Mapeamos los resultados de la API a los IDs de eliminatorias (ej: "R32-0")
+    const mappedKO = mapKOToKeys(parsed, ALL_KO_MATCHES, (id) => koTeams[id]);
+    
+    Object.entries(mappedKO).forEach(([key, score]) => {
+      const current = S.results.knockout?.[key];
+      if (!current || current.h === "" || current.a === "") {
+        if (!S.results.knockout) S.results.knockout = {};
+        if (!S.results.knockout[key]) S.results.knockout[key] = {h:"", a:""};
+        S.results.knockout[key].h = score.h;
+        S.results.knockout[key].a = score.a;
+        changed = true;
+      } else if (current.h !== score.h || current.a !== score.a) {
+        S.results.knockout[key].h = score.h;
+        S.results.knockout[key].a = score.a;
+        changed = true;
+      }
+    });
+  }
+
   if (changed) {
     await dbSet("prode-results", S.results);
-    console.log(`[API] Updated ${Object.keys(mapped).length} group results`);
+    console.log(`[API] Updated results`);
     if (onUpdate) onUpdate();
   } else {
-    console.log("[API] No group result changes");
+    console.log("[API] No result changes");
   }
 }
-
 // ═══ TEST MODE: LOAD QATAR 2022 RESULTS ═══
 const NAME_MAP_2022 = {
   "Qatar":"Qatar","Ecuador":"Ecuador","Senegal":"Senegal",
