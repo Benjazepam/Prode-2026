@@ -189,7 +189,12 @@ const KO={
 let TEST_MODE=false;
 function isLocked(k){if(TEST_MODE)return true;const ko=KO[k];if(!ko)return false;return new Date()>=new Date(ko);}
 function kickoffInfo(k){
-  const ko=KO[k];if(!ko)return"";
+  let ko=KO[k];
+  if(!ko && typeof ALL_KO_MATCHES!=="undefined"){
+    const km=ALL_KO_MATCHES.find(x=>x.id===k);
+    if(km) ko=km.ko;
+  }
+  if(!ko)return"";
   const d=new Date(ko);
   // Convert UTC to Argentina (UTC-3)
   const arg=new Date(d.getTime()-3*60*60*1000);
