@@ -759,11 +759,74 @@ SPECIALS.forEach(cat=>{
   o+=`</div>`;});}
 
 if(S.adminTab==="friendgroups"){
-if(typeof renderGroupsAdmin==="function"){
-  o+=renderGroupsAdmin(S,createGroup,deleteGroup);
-} else {
-  o+=`<div class="cd" style="text-align:center;color:var(--t3)">Cargando...</div>`;
-}}
+  if(S.viewGroup && S.config.groups?.[S.viewGroup]){
+    const g = S.config.groups[S.viewGroup];
+    const members = Object.entries(S.players).filter(([_, p]) => (p.groups || []).includes(g.code));
+    
+    o += `<button class="btn bgh" style="margin-bottom:12px;width:auto;padding:6px 14px;font-size:12px" onclick="S.viewGroup=null;render()">← Volver a Grupos</button>`;
+    
+    // Formulario de edición
+    o += `<div class="cd" style="padding:14px">
+      <div style="font-size:14px;font-weight:800;color:var(--pl);margin-bottom:10px">✏️ Editar Grupo: ${esc(g.code)}</div>
+      <div style="font-size:12px;color:var(--t2);margin-bottom:4px">Nombre del Grupo:</div>
+      <input class="inp" id="editGrpName" value="${esc(g.name)}" style="margin-bottom:8px">
+      <div style="font-size:12px;color:var(--t2);margin-bottom:4px">Premio para el 1°:</div>
+      <input class="inp" id="editGrpPrize" value="${esc(g.prize)}" style="margin-bottom:8px">
+      <div style="font-size:12px;color:var(--t2);margin-bottom:4px">Castigo para el último:</div>
+      <input class="inp" id="editGrpPrizeLast" value="${esc(g.prize_last)}" style="margin-bottom:12px">
+      <button class="btn bg2" onclick="saveGroupEdits('${esc(g.code)}')">💾 Guardar Cambios</button>
+    </div>`;
+    
+    // Listado de miembros reales del grupo
+    o += `<div class="cd" style="padding:14px">
+      <div style="font-size:14px;font-weight:800;color:var(--gd);margin-bottom:8px">👥 Miembros unidos (${members.length})</div>`;
+    if(members.length > 0){
+      o += `<div style="display:flex;flex-direction:column;gap:6px">`;
+      members.forEach(([name, data]) => {
+        o += `<div style="font-size:13px;background:var(--c2);border-radius:8px;padding:6px 12px;display:flex;justify-content:space-between;align-items:center">
+          <span>👤 <b>${esc(name)}</b></span>
+          <span style="font-size:11px;color:var(--t3)">Completado: ${comp(data)}%</span>
+        </div>`;
+      });
+      o += `</div>`;
+    } else {
+      o += `<div style="font-size:12px;color:var(--t3);text-align:center;padding:10px 0">Nadie se unió a este grupo todavía.</div>`;
+    }
+    o += `</div>`;
+  } else {
+    // Formulario de creación clásico
+    o += `<div class="cd" style="padding:12px">
+      <div style="font-size:13px;font-weight:700;margin-bottom:8px">➕ Crear nuevo grupo de amigos</div>
+      <input class="inp" id="grpName" placeholder="Nombre del grupo (ej: Los Pibes)" style="margin-bottom:6px">
+      <input class="inp" id="grpCode" placeholder="Código único (ej: PIBES)" style="margin-bottom:6px;text-transform:uppercase">
+      <input class="inp" id="grpPrize" placeholder="Premio para el 1° (opcional)" style="margin-bottom:6px">
+      <input class="inp" id="grpPrizeLast" placeholder="Castigo para el último (opcional)" style="margin-bottom:8px">
+      <button class="btn bp" onclick="createGroup()">Crear Grupo</button>
+    </div>`;
+    
+    // Lista de grupos con botón de administración
+    const groups = S.config.groups || {};
+    o += `<div style="font-size:14px;font-weight:800;color:var(--t2);margin-bottom:8px;margin-top:12px">👥 Grupos creados (${Object.keys(groups).length})</div>`;
+    Object.values(groups).forEach(g => {
+      const members = Object.entries(S.players).filter(([_, p]) => (p.groups || []).includes(g.code));
+      o += `<div class="cd" style="padding:14px;margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;align-items:start;gap:8px">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:15px;font-weight:800;color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(g.name)} <span style="font-size:11px;color:var(--pl)">(${esc(g.code)})</span></div>
+            <div style="font-size:11px;color:var(--t3);margin-top:2px">👥 ${members.length} miembro${members.length !== 1 ? "s" : ""}</div>
+            ${g.prize ? `<div style="font-size:11px;color:var(--gd);margin-top:2px">🏆 1°: ${esc(g.prize)}</div>` : ""}
+            ${g.prize_last ? `<div style="font-size:11px;color:var(--rd);margin-top:1px">💀 Último: ${esc(g.prize_last)}</div>` : ""}
+          </div>
+          <div style="display:flex;gap:4px;flex-shrink:0">
+            <button class="btn bgh" style="width:auto;padding:6px 10px;font-size:11px;font-weight:700" onclick="S.viewGroup='${esc(g.code)}';render()">✏️ Ver / Editar</button>
+            <button style="background:rgba(239,68,68,.12);border:none;border-radius:8px;padding:6px 12px;color:var(--rd);font-size:12px;font-weight:700;cursor:pointer" onclick="if(confirm('¿Borrar el grupo ${esc(g.code)}?'))deleteGroup('${esc(g.code)}')">🗑️</button>
+          </div>
+        </div>
+      </div>`;
+    });
+    if(!Object.keys(groups).length) o += `<div class="cd" style="text-align:center;color:var(--t3);padding:16px">No hay grupos creados todavía</div>`;
+  }
+}
 
 if(S.adminTab==="players"){
 o+=`<div class="cd" style="padding:10px"><div style="font-size:12px;color:var(--t2)">👥 Jugadores</div></div>`;
