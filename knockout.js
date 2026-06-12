@@ -336,7 +336,10 @@ function renderKoPlay(S, pd, flag, isKoLocked, setKoScore) {
     const bothKnown = t.home && t.away;
     
     o += `<div class="cd" style="padding:10px;margin-bottom:8px">`;
-    o += `<div style="font-size:11px;color:var(--t3);margin-bottom:4px;font-weight:700">${m.label}</div>`;
+    o += `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">`;
+    o += `<div style="font-size:11px;color:var(--t3);font-weight:700">${m.label}</div>`;
+    o += `<div>${typeof kickoffInfo==='function'?kickoffInfo(m.id):''}</div>`;
+    o += `</div>`;
     
     if (!bothKnown) {
       // Teams not yet determined
