@@ -303,6 +303,8 @@ async function clearTest(){
   toast(r);
 }
 async function checkApi(){
+  toast("📡 Buscando y guardando resultados...");
+  await fetchAutoResults(); // Esta es la línea que faltaba para forzar el guardado
   const r=await checkApiStatus();
   toast(r.msg);
 }
