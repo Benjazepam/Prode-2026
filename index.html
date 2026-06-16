@@ -696,16 +696,16 @@ if(S.viewPlayer&&S.players[S.viewPlayer]){
   SPECIALS.forEach(s=>{
     const raw=vp.specials?.[s.key]||"—";
     const v=s.type==="player"&&raw.includes("|")?parsePlayerVal(raw).name+" ("+parsePlayerVal(raw).team+")":raw;
-    const re=(S.results.specials||{})[cat.key];
-    let realBadge="";
+    const re=(S.results.specials||{})[s.key];
+    let extra="";
     if(re && re!=="" && (!Array.isArray(re) || re.length > 0)){
-    const reText=Array.isArray(re)?re.join(" o "):re;      
+      const reText=Array.isArray(re)?re.join(" o "):re;      
       const reDisp=s.type==="player"&&reText.includes("|")?parsePlayerVal(reText).name:reText;
       const pt=typeof calcSpPt==="function"?calcSpPt(s,raw,re,S.config.points):0;
       extra=`<div style="font-size:11px;color:var(--t3);text-align:right;margin-top:4px">Real: <span style="color:var(--tx)">${esc(reDisp)}</span> · ${pt>0?`<span style="color:var(--gl);font-weight:800">+${pt} pts</span>`:`<span style="color:var(--rd);font-weight:700">0 pts</span>`}</div>`;
     }
     o+=`<div style="font-size:12px;padding:6px 0;border-bottom:1px solid rgba(37,37,80,.1)"><div style="display:flex;justify-content:space-between"><span style="color:var(--t2)">${s.icon} ${s.label}</span><b style="color:var(--tx)">${esc(v)}</b></div>${extra}</div>`;
-  });  o+=`</div></div>`;return o;}
+  });
 
 let o=`<div style="padding:16px"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><button class="btn bgh" style="width:auto;padding:5px 12px;font-size:12px" onclick="doRefresh()">🔄</button><button class="btn bp" style="width:auto;padding:5px 12px;font-size:12px" onclick="shareWA()">📤 WhatsApp</button></div>`;
 // Ranking tabs
