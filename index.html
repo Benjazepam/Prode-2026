@@ -641,25 +641,29 @@ if(S.playTab==="specials"){
 const sLock=specialsLocked();
 o+=`<div class="cd" style="padding:10px"><div style="font-size:12px;color:${sLock?"var(--rd)":"var(--t2)"}">${sLock?"🔒 Predicciones bloqueadas — el mundial ya empezó":"💡 Dan muchos puntos. Se bloquean cuando arranca el mundial."}</div></div>`;
 SPECIALS.forEach(cat=>{
-  // For player type, use cache for current UI state; saved value is "team|name"
   const savedVal=pd.specials[cat.key]||"";
   const cacheVal=pd_specials_cache[cat.key]||savedVal;
   const pv=parsePlayerVal(cacheVal);
   let extraInfo = "";
+  
   if(cat.key === "gol_torneo") {
     const b = S.config.points[cat.key]||0;
     extraInfo = `<div style="font-size:11px;color:var(--t3);margin-top:-2px;margin-bottom:6px">Acierto exacto: <b style="color:var(--gd)">${b}pts</b> · Errar por 5: <b style="color:var(--gd)">${Math.round(b*0.6)}pts</b> · Por 10: <b style="color:var(--gd)">${Math.round(b*0.3)}pts</b> · Por 20: <b style="color:var(--gd)">${Math.round(b*0.1)}pts</b></div>`;
-  } else if(["mas_goleador","mas_goleado","menos_recibe","menos_goles","partido_mas_goles"].includes(cat.key)){
+  } else if(["mas_goleador","mas_goleado","menos_recibe","menos_goles","partido_mas_goles","decepcion","sorpresa"].includes(cat.key)){
     extraInfo = `<div style="font-size:11px;color:var(--t3);margin-top:-2px;margin-bottom:6px">En caso de empate en la vida real, acertar a cualquiera suma.</div>`;
   }
-  o+=`<div class="cd" style="padding:12px;margin-bottom:8px${sLock?";opacity:.6":""}"><div style="font-size:13px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px"><span>${cat.icon}</span> ${cat.label}<span style="margin-left:auto;font-size:11px;color:var(--gd);font-weight:800">+${S.config.points[cat.key]||0}</span></div>${extraInfo}`;
-  if(cat.type==="team"){
-    o+=`<select class="sel" ${sLock?"disabled":""} onchange="setSpec('${cat.key}',this.value)">${tOpts(savedVal)}</select>`;
-  } else if(cat.type==="player"){
-    // Step 1: team selector
-    o+=`<select class="sel" ${sLock?"disabled":""} style="margin-bottom:6px" onchange="setSpecTeamOnly('${cat.key}',this.value)">${playerTeamOpts(pv.team)}</select>`;
-    // Step 2: player selector (only shown once team is chosen)
-    if(pv.team){
+
+  const re=(S.results.specials||{})[cat.key];
+  let realBadge="";
+  if(re && re!=="" && (!Array.isArray(re) || re.length > 0)){
+    const reText=Array.isArray(re)?re.join(" o "):re;
+    const reDisp=cat.type==="player"&&reText.includes("|")?parsePlayerVal(reText).name:reText;
+    const pt=typeof calcSpPt==="function"?calcSpPt(cat,savedVal,re,S.config.points):0;
+    realBadge=`<div style="font-size:11px;padding:6px 8px;background:rgba(0,0,0,.2);border-radius:6px;margin-bottom:8px;display:flex;justify-content:space-between;border:1px solid var(--bd)"><span style="color:var(--t3)">Real: <b style="color:var(--tx)">${esc(reDisp)}</b></span>${pt>0?`<span style="color:var(--gl);font-weight:800">+${pt} pts</span>`:`<span style="color:var(--rd);font-weight:800">0 pts</span>`}</div>`;
+  }
+
+  o+=`<div class="cd" style="padding:12px;margin-bottom:8px${sLock?";opacity:.6":""}"><div style="font-size:13px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px"><span>${cat.icon}</span> ${cat.label}<span style="margin-left:auto;font-size:11px;color:var(--gd);font-weight:800">+${S.config.points[cat.key]||0}</span></div>${extraInfo}${realBadge}`;
+  if(cat.type==="team"){ 
       const savedPv=parsePlayerVal(savedVal);
       const selectedName=(savedPv.team===pv.team)?savedPv.name:(pv.name||"");
       o+=`<select class="sel" ${sLock?"disabled":""} onchange="const v=${jsArg(pv.team+"|")}+this.value;setSpec('${cat.key}',v);pd_specials_cache['${cat.key}']=v;">${playerNameOpts(pv.team,cat.posFilter,selectedName)}</select>`;
