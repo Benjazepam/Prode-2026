@@ -692,7 +692,8 @@ const ranks=Object.entries(S.players).map(([n,d])=>({n,d,p:typeof calcTotalPts==
 if(S.viewPlayer&&S.players[S.viewPlayer]){
   const vp=S.players[S.viewPlayer],vpts=calcPts(vp);
   let o=`<div style="padding:16px"><button class="btn bgh" style="margin-bottom:10px;width:auto;padding:6px 14px;font-size:12px" onclick="S.viewPlayer=null;render()">← Volver al ranking</button>`;
-  o+=`<div class="cd"><div style="font-size:18px;font-weight:800;margin-bottom:4px">👤 ${esc(S.viewPlayer)}</div><div style="font-size:13px;color:var(--t2)">Completado: ${comp(vp)}% · Total: <b style="color:var(--gd)">${vpts.total} pts</b></div><div style="font-size:12px;color:var(--t3);margin-top:4px"><span style="color:var(--tx);font-weight:700">${vpts.det.e} PLENOS 🎯</span> · ${vpts.det.r} resultados ✓ · ${vpts.det.g} goles ⚽</div></div>`;  o+=`<div class="cd"><div style="font-size:14px;font-weight:800;margin-bottom:8px">🏅 Predicciones especiales</div>`;
+  o+=`<div class="cd"><div style="font-size:18px;font-weight:800;margin-bottom:4px">👤 ${esc(S.viewPlayer)}</div><div style="font-size:13px;color:var(--t2)">Completado: ${comp(vp)}% · Total: <b style="color:var(--gd)">${vpts.total} pts</b></div><div style="font-size:12px;color:var(--t3);margin-top:4px"><span style="color:var(--tx);font-weight:700">${vpts.det.e} PLENOS 🎯</span> · ${vpts.det.r} resultados ✓ · ${vpts.det.g} goles ⚽</div></div>`;
+  o+=`<div class="cd"><div style="font-size:14px;font-weight:800;margin-bottom:8px">🏅 Predicciones especiales</div>`;
   SPECIALS.forEach(s=>{
     const raw=vp.specials?.[s.key]||"—";
     const v=s.type==="player"&&raw.includes("|")?parsePlayerVal(raw).name+" ("+parsePlayerVal(raw).team+")":raw;
@@ -706,7 +707,9 @@ if(S.viewPlayer&&S.players[S.viewPlayer]){
     }
     o+=`<div style="font-size:12px;padding:6px 0;border-bottom:1px solid rgba(37,37,80,.1)"><div style="display:flex;justify-content:space-between"><span style="color:var(--t2)">${s.icon} ${s.label}</span><b style="color:var(--tx)">${esc(v)}</b></div>${extra}</div>`;
   });
-
+  o+=`</div></div>`;
+  return o;
+}
 let o=`<div style="padding:16px"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><button class="btn bgh" style="width:auto;padding:5px 12px;font-size:12px" onclick="doRefresh()">🔄</button><button class="btn bp" style="width:auto;padding:5px 12px;font-size:12px" onclick="shareWA()">📤 WhatsApp</button></div>`;
 // Ranking tabs
 const myGrps=(S.user&&!S.user.isAdmin&&S.players[S.user.name])?(S.players[S.user.name].groups||[]):[];
