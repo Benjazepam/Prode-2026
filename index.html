@@ -696,10 +696,10 @@ if(S.viewPlayer&&S.players[S.viewPlayer]){
   SPECIALS.forEach(s=>{
     const raw=vp.specials?.[s.key]||"—";
     const v=s.type==="player"&&raw.includes("|")?parsePlayerVal(raw).name+" ("+parsePlayerVal(raw).team+")":raw;
-    const re=(S.results.specials||{})[s.key];
-    let extra="";
-    if(re&&re!==""){
-      const reText=Array.isArray(re)?re.join(" o "):re;
+    const re=(S.results.specials||{})[cat.key];
+    let realBadge="";
+    if(re && re!=="" && (!Array.isArray(re) || re.length > 0)){
+    const reText=Array.isArray(re)?re.join(" o "):re;      
       const reDisp=s.type==="player"&&reText.includes("|")?parsePlayerVal(reText).name:reText;
       const pt=typeof calcSpPt==="function"?calcSpPt(s,raw,re,S.config.points):0;
       extra=`<div style="font-size:11px;color:var(--t3);text-align:right;margin-top:4px">Real: <span style="color:var(--tx)">${esc(reDisp)}</span> · ${pt>0?`<span style="color:var(--gl);font-weight:800">+${pt} pts</span>`:`<span style="color:var(--rd);font-weight:700">0 pts</span>`}</div>`;
