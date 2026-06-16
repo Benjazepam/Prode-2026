@@ -269,7 +269,13 @@ const rSp=S.results.specials||{};SPECIALS.forEach(c=>{const pr=pd.specials?.[c.k
     const reName=parsePlayerVal(re).name||re;
     if(prName.toLowerCase().trim()===reName.toLowerCase().trim())sP+=pts[c.key]||0;
   }
-  else{if(pr.toLowerCase().trim()===re.toLowerCase().trim())sP+=pts[c.key]||0;}});
+  else{
+    if(Array.isArray(re)){
+      if(re.some(x=>pr.toLowerCase().trim()===String(x).toLowerCase().trim()))sP+=pts[c.key]||0;
+    } else {
+      if(pr.toLowerCase().trim()===String(re).toLowerCase().trim())sP+=pts[c.key]||0;
+    }
+  }});
 return{total:mP+sP,det};}
 // Add KO points
 function calcTotalPts(pd){
@@ -370,6 +376,14 @@ async function setSpec(k,v){
 async function setPt(k,v){S.config.points[k]=parseFloat(v)||0;await dbSet("prode-config",S.config);render();}
 async function setRes(k,si,v){if(!S.results.matches[k])S.results.matches[k]={h:"",a:""};S.results.matches[k][si]=v;await dbSet("prode-results",S.results);render();}
 async function setRSp(k,v){if(!S.results.specials)S.results.specials={};S.results.specials[k]=v;await dbSet("prode-results",S.results);render();}
+async function toggleRSp(k,v){
+  if(!S.results.specials)S.results.specials={};
+  let cur = S.results.specials[k];
+  if(!Array.isArray(cur)) cur = cur ? [cur] : [];
+  if(cur.includes(v)) cur = cur.filter(x=>x!==v); else cur.push(v);
+  S.results.specials[k]=cur;
+  await dbSet("prode-results",S.results);render();
+}
 async function setKoScore(id,si,v){
   if(!S.players[S.user.name].knockout)S.players[S.user.name].knockout={};
   if(!S.players[S.user.name].knockout[id])S.players[S.user.name].knockout[id]={h:"",a:""};
@@ -511,7 +525,8 @@ return`<div style="padding:16px">
     ⚽ Resultado exacto: <b style="color:var(--gd)">${pts.exacto} pts</b><br>
     <span style="color:var(--gl)">→ Máximo por partido: <b>${maxPM()} pts</b></span><br><br>
     <b style="color:var(--tx)">🏅 Especiales (se dan una vez):</b><br>
-    ${SPECIALS.map(s=>`${s.icon} ${s.label}: <b style="color:var(--gd)">${pts[s.key]||0}</b>`).join(" · ")}<br><br>
+    ${SPECIALS.map(s=>`${s.icon} ${s.label}: <b style="color:var(--gd)">${pts[s.key]||0}</b>`).join(" · ")}<br>
+    <div style="font-size:11.5px;color:var(--t2);line-height:1.4;margin-top:8px;padding:8px;background:var(--bg);border-radius:6px;border:1px solid var(--bd)">💡 <b>Goles totales torneo:</b> Da puntos parciales si errás por 5, 10 o 20 goles.<br>💡 <b>Predicciones con empate real:</b> (Ej: más goleado) Se premia a todos los acertantes.</div><br>
     <span style="color:var(--gl2)">🏆 Máximo teórico: <b>${maxPM()*72+SPECIALS.reduce((a,s)=>a+(pts[s.key]||0),0)} pts</b></span>
   </div>
   <input class="inp" id="nameIn" placeholder="Tu nombre..." style="margin-bottom:10px" onkeydown="if(event.key==='Enter')doLogin()">
@@ -619,7 +634,14 @@ SPECIALS.forEach(cat=>{
   const savedVal=pd.specials[cat.key]||"";
   const cacheVal=pd_specials_cache[cat.key]||savedVal;
   const pv=parsePlayerVal(cacheVal);
-  o+=`<div class="cd" style="padding:12px;margin-bottom:8px${sLock?";opacity:.6":""}"><div style="font-size:13px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px"><span>${cat.icon}</span> ${cat.label}<span style="margin-left:auto;font-size:11px;color:var(--gd);font-weight:800">+${S.config.points[cat.key]||0}</span></div>`;
+  let extraInfo = "";
+  if(cat.key === "gol_torneo") {
+    const b = S.config.points[cat.key]||0;
+    extraInfo = `<div style="font-size:11px;color:var(--t3);margin-top:-2px;margin-bottom:6px">Acierto exacto: <b style="color:var(--gd)">${b}pts</b> · Errar por 5: <b style="color:var(--gd)">${Math.round(b*0.6)}pts</b> · Por 10: <b style="color:var(--gd)">${Math.round(b*0.3)}pts</b> · Por 20: <b style="color:var(--gd)">${Math.round(b*0.1)}pts</b></div>`;
+  } else if(["mas_goleador","mas_goleado","menos_recibe","menos_goles","partido_mas_goles"].includes(cat.key)){
+    extraInfo = `<div style="font-size:11px;color:var(--t3);margin-top:-2px;margin-bottom:6px">En caso de empate en la vida real, acertar a cualquiera suma.</div>`;
+  }
+  o+=`<div class="cd" style="padding:12px;margin-bottom:8px${sLock?";opacity:.6":""}"><div style="font-size:13px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px"><span>${cat.icon}</span> ${cat.label}<span style="margin-left:auto;font-size:11px;color:var(--gd);font-weight:800">+${S.config.points[cat.key]||0}</span></div>${extraInfo}`;
   if(cat.type==="team"){
     o+=`<select class="sel" ${sLock?"disabled":""} onchange="setSpec('${cat.key}',this.value)">${tOpts(savedVal)}</select>`;
   } else if(cat.type==="player"){
@@ -744,9 +766,28 @@ SPECIALS.forEach(cat=>{
   const cacheVal=S.adminRSpCache[cat.key]!==undefined?S.adminRSpCache[cat.key]:val;
   const pv=parsePlayerVal(cacheVal);
   o+=`<div class="cd" style="padding:12px;margin-bottom:8px"><div style="font-size:13px;font-weight:700;margin-bottom:6px">${cat.icon} ${cat.label}</div>`;
-  if(cat.type==="team")o+=`<select class="sel" style="border-color:rgba(245,158,11,.35);color:var(--gd)" onchange="setRSp('${cat.key}',this.value)"><option value="">...</option>${TEAMS.map(t=>`<option value="${t}"${val===t?" selected":""}>${t}</option>`).join("")}</select>`;
-  else if(cat.type==="match")o+=`<select class="sel" style="border-color:rgba(245,158,11,.35);color:var(--gd)" onchange="setRSp('${cat.key}',this.value)">${mOpts(val)}</select>`;
-  else if(cat.type==="player"){
+  
+  const isMulti = ["mas_goleador","mas_goleado","menos_recibe","menos_goles","partido_mas_goles"].includes(cat.key);
+  if (isMulti) {
+    let arr = Array.isArray(val) ? val : (val ? [val] : []);
+    if(arr.length > 0) {
+      o+=`<div style="margin-bottom:8px;display:flex;gap:4px;flex-wrap:wrap">`;
+      arr.forEach(x => {
+        const label = cat.type==='match'?(ALL_M.find(m=>m.k===x)?.l||x):x;
+        o+=`<span style="background:var(--gd);color:#000;padding:3px 8px;border-radius:12px;font-size:11px;font-weight:800;display:flex;align-items:center;gap:6px">${label} <button style="background:none;border:none;color:#000;cursor:pointer;font-weight:900;font-size:13px;line-height:1" onclick="toggleRSp('${cat.key}','${x}')">✕</button></span>`;
+      });
+      o+=`</div>`;
+    }
+    o+=`<select class="sel" style="border-color:rgba(245,158,11,.35);color:var(--gd)" onchange="if(this.value)toggleRSp('${cat.key}',this.value)">`;
+    o+=`<option value="">+ Agregar opción por empate...</option>`;
+    if(cat.type==="team") TEAMS.forEach(t=> { if(!arr.includes(t)) o+=`<option value="${t}">${t}</option>`; });
+    else if(cat.type==="match") ALL_M.forEach(m=> { if(!arr.includes(m.k)) o+=`<option value="${m.k}">${m.l}</option>`; });
+    o+=`</select>`;
+  } else if(cat.type==="team") {
+    o+=`<select class="sel" style="border-color:rgba(245,158,11,.35);color:var(--gd)" onchange="setRSp('${cat.key}',this.value)"><option value="">...</option>${TEAMS.map(t=>`<option value="${t}"${val===t?" selected":""}>${t}</option>`).join("")}</select>`;
+  } else if(cat.type==="match") {
+    o+=`<select class="sel" style="border-color:rgba(245,158,11,.35);color:var(--gd)" onchange="setRSp('${cat.key}',this.value)">${mOpts(val)}</select>`;
+  } else if(cat.type==="player"){
     o+=`<select class="sel" style="border-color:rgba(245,158,11,.35);color:var(--gd);margin-bottom:6px" onchange="S.adminRSpCache['${cat.key}']=(this.value?this.value+'|':'');render()">${playerTeamOpts(pv.team)}</select>`;
     if(pv.team){
       const savedPv=parsePlayerVal(val);
