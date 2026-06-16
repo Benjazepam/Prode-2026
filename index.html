@@ -767,8 +767,7 @@ SPECIALS.forEach(cat=>{
   const pv=parsePlayerVal(cacheVal);
   o+=`<div class="cd" style="padding:12px;margin-bottom:8px"><div style="font-size:13px;font-weight:700;margin-bottom:6px">${cat.icon} ${cat.label}</div>`;
   
-  const isMulti = ["mas_goleador","mas_goleado","menos_recibe","menos_goles","partido_mas_goles"].includes(cat.key);
-  if (isMulti) {
+  const isMulti = ["mas_goleador","mas_goleado","menos_recibe","menos_goles","partido_mas_goles","decepcion","sorpresa"].includes(cat.key);  if (isMulti) {
     let arr = Array.isArray(val) ? val : (val ? [val] : []);
     if(arr.length > 0) {
       o+=`<div style="margin-bottom:8px;display:flex;gap:4px;flex-wrap:wrap">`;
