@@ -663,7 +663,12 @@ SPECIALS.forEach(cat=>{
   }
 
   o+=`<div class="cd" style="padding:12px;margin-bottom:8px${sLock?";opacity:.6":""}"><div style="font-size:13px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px"><span>${cat.icon}</span> ${cat.label}<span style="margin-left:auto;font-size:11px;color:var(--gd);font-weight:800">+${S.config.points[cat.key]||0}</span></div>${extraInfo}${realBadge}`;
-  if(cat.type==="team"){ 
+  
+  if(cat.type==="team"){
+    o+=`<select class="sel" ${sLock?"disabled":""} onchange="setSpec('${cat.key}',this.value)">${tOpts(savedVal)}</select>`;
+  } else if(cat.type==="player"){
+    o+=`<select class="sel" ${sLock?"disabled":""} style="margin-bottom:6px" onchange="setSpecTeamOnly('${cat.key}',this.value)">${playerTeamOpts(pv.team)}</select>`;
+    if(pv.team){
       const savedPv=parsePlayerVal(savedVal);
       const selectedName=(savedPv.team===pv.team)?savedPv.name:(pv.name||"");
       o+=`<select class="sel" ${sLock?"disabled":""} onchange="const v=${jsArg(pv.team+"|")}+this.value;setSpec('${cat.key}',v);pd_specials_cache['${cat.key}']=v;">${playerNameOpts(pv.team,cat.posFilter,selectedName)}</select>`;
@@ -676,7 +681,8 @@ SPECIALS.forEach(cat=>{
   } else {
     o+=`<input class="inp" ${sLock?"disabled":""} value="${esc(savedVal)}" placeholder="Tu predicción..." onchange="setSpec('${cat.key}',this.value)">`;
   }
-  o+=`</div>`;});}
+  o+=`</div>`;
+});}
 
 if(S.playTab==="mygroups"){
 if(typeof renderJoinGroup==="function"){
