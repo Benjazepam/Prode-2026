@@ -309,6 +309,9 @@ Object.keys(KO).forEach(k=>{const ko=new Date(KO[k]);if(ko>now&&ko<=soon){const 
 // Real fetch: calls autoFetchResults from api.js
 async function fetchAutoResults(){
   if(typeof autoFetchResults==="function"){
+    // Descarga los datos frescos para no pisar goleadores ni especiales
+    const latestR = await dbGet("prode-results");
+    if(latestR) S.results = latestR;
     await autoFetchResults(GM,S,dbSet,()=>render());
   }
 }
@@ -473,16 +476,22 @@ async function addScorer(){
   const team=document.getElementById("scrTeam")?.value||"";
   const goals=parseInt(document.getElementById("scrGoals")?.value)||0;
   if(!name){toast("❌ Poné un nombre");return;}
+  const latest = await dbGet("prode-results");
+  if(latest) S.results = latest;
   if(!S.results.scorers)S.results.scorers=[];
   S.results.scorers.push({name,team,goals});
   await dbSet("prode-results",S.results);toast("✅ "+name+" agregado");render();
 }
 async function updateScorerGoals(idx,v){
+  const latest = await dbGet("prode-results");
+  if(latest) S.results = latest;
   if(!S.results.scorers||!S.results.scorers[idx])return;
   S.results.scorers[idx].goals=parseInt(v)||0;
   await dbSet("prode-results",S.results);render();
 }
 async function removeScorer(idx){
+  const latest = await dbGet("prode-results");
+  if(latest) S.results = latest;
   if(!S.results.scorers)return;
   S.results.scorers.splice(idx,1);
   await dbSet("prode-results",S.results);toast("Borrado");render();
