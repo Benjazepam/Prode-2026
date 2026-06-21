@@ -278,13 +278,20 @@ const rSp=S.results.specials||{};SPECIALS.forEach(c=>{const pr=pd.specials?.[c.k
   }});
 return{total:mP+sP,det};}
 // Add KO points
+// Add KO points
 function calcTotalPts(pd){
   const gp=calcPts(pd);
   if(typeof calcKoPts==="function"){
-    const kp=calcKoPts(pd.knockout,S.results.knockout,S.config.points);
-    const multi=S.config.points.ko_multi||1;
-    const koTotal=Number((kp.total*multi).toFixed(2));
-    return{total:Number((gp.total+koTotal).toFixed(2)),det:{e:gp.det.e+kp.det.e,r:gp.det.r+kp.det.r,g:gp.det.g+kp.det.g}};
+    const base = S.config.points;
+    // Sobrescribimos temporalmente los puntos de grupo por los de eliminatorias
+    const koPts = {
+      ...base,
+      resultado: base.ko_resultado !== undefined ? base.ko_resultado : (base.resultado || 0),
+      goles_equipo: base.ko_goles_equipo !== undefined ? base.ko_goles_equipo : (base.goles_equipo || 0),
+      exacto: base.ko_exacto !== undefined ? base.ko_exacto : (base.exacto || 0)
+    };
+    const kp=calcKoPts(pd.knockout, S.results.knockout, koPts);
+    return{total:Number((gp.total+kp.total).toFixed(2)),det:{e:gp.det.e+kp.det.e,r:gp.det.r+kp.det.r,g:gp.det.g+kp.det.g}};
   }
   return gp;
 }
@@ -794,10 +801,11 @@ if(S.adminTab==="points"){
 o+=`<div class="cd"><div style="font-size:14px;font-weight:800;margin-bottom:10px">⚽ Por partido</div>`;
 [{k:"resultado",l:"Resultado (V/E/D)"},{k:"goles_equipo",l:"Goles 1 equipo"},{k:"exacto",l:"Exacto"}].forEach(x=>{
 o+=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span style="font-size:13px;font-weight:700">${x.l}</span><div style="display:flex;align-items:center;gap:4px"><input type="number" min="0" value="${pts[x.k]}" onchange="setPt('${x.k}',this.value)" style="width:50px;height:32px;text-align:center;font-size:15px;font-weight:800;border-radius:8px;border:2px solid var(--bd);background:var(--bg);color:var(--gd);outline:none"><span style="font-size:11px;color:var(--t3)">pts</span></div></div>`;});
-o+=`</div><div class="cd"><div style="font-size:14px;font-weight:800;margin-bottom:10px">🏆 Eliminatorias — Multiplicador</div>
-<div style="font-size:12px;color:var(--t2);margin-bottom:8px">Los puntos de partidos de eliminatorias se multiplican por este valor. Ej: x1.5 = un exacto de grupos vale 5, en eliminatorias vale 7.5</div>
-<div style="display:flex;gap:6px;align-items:center">${[1,1.5,2,3].map(v=>`<button class="btn ${(pts.ko_multi||1.5)===v?"bgl":"bgh"}" style="width:auto;padding:6px 14px;font-size:13px;font-weight:800" onclick="setPt('ko_multi',${v})">x${v}</button>`).join("")}</div>
-</div><div class="cd"><div style="font-size:14px;font-weight:800;margin-bottom:10px">🏅 Especiales</div>`;
+o+=`</div><div class="cd"><div style="font-size:14px;font-weight:800;margin-bottom:10px">🏆 Puntos Eliminatorias</div>`;
+[{k:"ko_resultado",l:"Resultado (V/E/D)"},{k:"ko_goles_equipo",l:"Goles 1 equipo"},{k:"ko_exacto",l:"Exacto (Pleno)"}].forEach(x=>{
+  const val = pts[x.k] !== undefined ? pts[x.k] : (pts[x.k.replace('ko_','')] || 0);
+o+=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span style="font-size:13px;font-weight:700">${x.l}</span><div style="display:flex;align-items:center;gap:4px"><input type="number" step="0.5" min="0" value="${val}" onchange="setPt('${x.k}',this.value)" style="width:60px;height:32px;text-align:center;font-size:15px;font-weight:800;border-radius:8px;border:2px solid var(--bd);background:var(--bg);color:var(--gd);outline:none"><span style="font-size:11px;color:var(--t3)">pts</span></div></div>`;});
+o+=`</div><div class="cd"><div style="font-size:14px;font-weight:800;margin-bottom:10px">🏅 Especiales</div>`;
 SPECIALS.forEach(s=>{o+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(37,37,80,.1)"><span style="font-size:12px">${s.icon} ${s.label}</span><div style="display:flex;align-items:center;gap:4px"><input type="number" min="0" value="${pts[s.key]||0}" onchange="setPt('${s.key}',this.value)" style="width:50px;height:28px;text-align:center;font-size:13px;font-weight:800;border-radius:8px;border:2px solid var(--bd);background:var(--bg);color:var(--gd);outline:none"></div></div>`;});
 o+=`</div>`;}
 
