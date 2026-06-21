@@ -283,8 +283,8 @@ function calcTotalPts(pd){
   if(typeof calcKoPts==="function"){
     const kp=calcKoPts(pd.knockout,S.results.knockout,S.config.points);
     const multi=S.config.points.ko_multi||1;
-    const koTotal=Math.round(kp.total*multi);
-    return{total:gp.total+koTotal,det:{e:gp.det.e+kp.det.e,r:gp.det.r+kp.det.r,g:gp.det.g+kp.det.g}};
+    const koTotal=Number((kp.total*multi).toFixed(2));
+    return{total:Number((gp.total+koTotal).toFixed(2)),det:{e:gp.det.e+kp.det.e,r:gp.det.r+kp.det.r,g:gp.det.g+kp.det.g}};
   }
   return gp;
 }
