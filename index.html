@@ -751,9 +751,81 @@ if(S.viewPlayer&&S.players[S.viewPlayer]){
       const pt=typeof calcSpPt==="function"?calcSpPt(s,raw,re,S.config.points):0;
       extra=`<div style="font-size:11px;color:var(--t3);text-align:right;margin-top:4px">Real: <span style="color:var(--tx)">${esc(reDisp)}</span> · ${pt>0?`<span style="color:var(--gl);font-weight:800">+${pt} pts</span>`:`<span style="color:var(--rd);font-weight:700">0 pts</span>`}</div>`;
     }
-    o+=`<div style="font-size:12px;padding:6px 0;border-bottom:1px solid rgba(37,37,80,.1)"><div style="display:flex;justify-content:space-between"><span style="color:var(--t2)">${s.icon} ${s.label}</span><b style="color:var(--tx)">${esc(v)}</b></div>${extra}</div>`;
+o+=`<div style="font-size:12px;padding:6px 0;border-bottom:1px solid rgba(37,37,80,.1)"><div style="display:flex;justify-content:space-between"><span style="color:var(--t2)">${s.icon} ${s.label}</span><b style="color:var(--tx)">${esc(v)}</b></div>${extra}</div>`;
   });
-  o+=`</div></div>`;
+  o+=`</div>`; // Cierra el panel de Especiales
+  
+  // ═══ HISTORIAL DE PARTIDOS ═══
+  let hist = [];
+  const basePts = S.config.points;
+  
+  // 1. Recorrer Grupos
+  Object.entries(S.results.matches||{}).forEach(([k,re])=>{
+    if(re.h!=="" && re.a!==""){
+      const m = GM[k];
+      if(!m) return;
+      const pr = vp.matches?.[k] || {h:"",a:""};
+      let pt = 0, isPleno = false;
+      if(pr.h!==""&&pr.a!==""){
+        const ph=parseInt(pr.h),pa=parseInt(pr.a),rh=parseInt(re.h),ra=parseInt(re.a);
+        if(ph===rh&&pa===ra){ pt = basePts.exacto + basePts.resultado + basePts.goles_equipo*2; isPleno = true; }
+        else {
+          if(Math.sign(ph-pa)===Math.sign(rh-ra)) pt += basePts.resultado;
+          if(ph===rh) pt += basePts.goles_equipo;
+          if(pa===ra) pt += basePts.goles_equipo;
+        }
+      }
+      hist.push({ mLabel: `${flag(m.h)} ${m.h} vs ${m.a} ${flag(m.a)}`, pr, re, pt: Number(pt.toFixed(2)), isPleno });
+    }
+  });
+
+  // 2. Recorrer Eliminatorias (si ya arrancaron)
+  if(S.results.knockout && typeof computeGroupStandings === "function") {
+     const koPts = { ...basePts, resultado: basePts.ko_resultado!==undefined?basePts.ko_resultado:(basePts.resultado||0), goles_equipo: basePts.ko_goles_equipo!==undefined?basePts.ko_goles_equipo:(basePts.goles_equipo||0), exacto: basePts.ko_exacto!==undefined?basePts.ko_exacto:(basePts.exacto||0) };
+     const st = computeGroupStandings(GM, S.results.matches);
+     const bt = bestThirdPlaced(st);
+     const kt = getKoTeams(st, bt, S.results.knockout);
+     
+     Object.entries(S.results.knockout).forEach(([k,re])=>{
+       if(re.h!=="" && re.a!==""){
+          const t1 = kt(k)?.home;
+          const t2 = kt(k)?.away;
+          if(!t1 || !t2) return;
+          const pr = vp.knockout?.[k] || {h:"",a:""};
+          let pt = 0, isPleno = false;
+          if(pr.h!==""&&pr.a!==""){
+            const ph=parseInt(pr.h),pa=parseInt(pr.a),rh=parseInt(re.h),ra=parseInt(re.a);
+            if(ph===rh&&pa===ra){ pt = koPts.exacto + koPts.resultado + koPts.goles_equipo*2; isPleno = true; }
+            else {
+              if(Math.sign(ph-pa)===Math.sign(rh-ra)) pt += koPts.resultado;
+              if(ph===rh) pt += koPts.goles_equipo;
+              if(pa===ra) pt += koPts.goles_equipo;
+            }
+          }
+          hist.push({ mLabel: `(Elim) ${flag(t1)} ${t1} vs ${t2} ${flag(t2)}`, pr, re, pt: Number(pt.toFixed(2)), isPleno });
+       }
+     });
+  }
+
+  // 3. Dibujar el historial
+  if(hist.length > 0) {
+    hist.sort((a,b) => b.pt - a.pt); // Ordenar de mayor a menor puntaje
+    o += `<div class="cd"><div style="font-size:14px;font-weight:800;margin-bottom:8px">📅 Historial de Partidos</div>`;
+    hist.forEach(h => {
+       o += `<div style="font-size:12px;padding:8px 0;border-bottom:1px solid rgba(37,37,80,.1);display:flex;justify-content:space-between;align-items:center">`;
+       o += `<div><div style="color:var(--t2);margin-bottom:4px">${h.mLabel}</div>`;
+       o += `<div style="color:var(--tx);font-weight:700">Predicción: ${h.pr.h===""?"—":h.pr.h} - ${h.pr.a===""?"—":h.pr.a} <span style="color:var(--t3);font-weight:400;margin-left:4px">(Real: ${h.re.h}-${h.re.a})</span></div></div>`;
+       o += `<div style="text-align:right">`;
+       if(h.isPleno) o += `<div style="font-size:10px;color:var(--gl);font-weight:800;margin-bottom:2px">🎯 PLENO</div>`;
+       o += `<div style="color:${h.pt>0?'var(--gl)':'var(--rd)'};font-weight:800">${h.pt>0?'+':''}${h.pt} pts</div>`;
+       o += `</div></div>`;
+    });
+    o += `</div>`;
+  } else {
+    o += `<div class="cd" style="text-align:center;padding:16px;color:var(--t3);font-size:12px">Aún no hay partidos terminados para mostrar.</div>`;
+  }
+  
+  o+=`</div>`; // Cierra el div principal del perfil
   return o;
 }
 let o=`<div style="padding:16px"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><button class="btn bgh" style="width:auto;padding:5px 12px;font-size:12px" onclick="doRefresh()">🔄</button><button class="btn bp" style="width:auto;padding:5px 12px;font-size:12px" onclick="shareWA()">📤 WhatsApp</button></div>`;
