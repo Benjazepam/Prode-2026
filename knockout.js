@@ -317,15 +317,22 @@ function renderKoPlay(S, pd, flag, isKoLocked, setKoScore) {
   
   let o = "";
   
-  const pts = S.config.points;
-  const m = pts.ko_multi || 1.5;
-  const valRes = Number((pts.resultado * m).toFixed(2));
-  const valGol = Number((pts.goles_equipo * m).toFixed(2));
-  const valEx = Number(((pts.exacto + pts.resultado + pts.goles_equipo*2) * m).toFixed(2));
+  // Leemos los nuevos puntos específicos de eliminatorias
+  const basePts = S.config.points;
+  const valRes = basePts.ko_resultado !== undefined ? basePts.ko_resultado : (basePts.resultado || 0);
+  const valGol = basePts.ko_goles_equipo !== undefined ? basePts.ko_goles_equipo : (basePts.goles_equipo || 0);
+  const valExactoExtra = basePts.ko_exacto !== undefined ? basePts.ko_exacto : (basePts.exacto || 0);
+  const valEx = valRes + (valGol * 2) + valExactoExtra;
+  
+  // Creamos la configuración específica de knockouts
+  const koPts = { ...basePts, resultado: valRes, goles_equipo: valGol, exacto: valExactoExtra };
+  
+  // ESTO ES CLAVE: pisamos la variable pts para que el resto de la función lea los valores nuevos
+  const pts = koPts; 
 
   o += `<div class="cd" style="background:linear-gradient(135deg, rgba(124,58,237,0.15), rgba(245,158,11,0.05)); border:1px solid rgba(124,58,237,0.3); text-align:center; padding:12px; margin-bottom:12px">`;
-  o += `<div style="font-size:14px; font-weight:800; color:var(--tx); margin-bottom:4px">🔥 ¡Ahora se viene lo importante, y tus predicciones valen más que nunca!</div>`;
-  o += `<div style="font-size:12px; color:var(--t2)">Acertar resultado: <b style="color:var(--gd)">${valRes} pts</b> · Goles de un equipo: <b style="color:var(--gd)">${valGol} pts</b><br>PLENO EXACTO: <b style="color:var(--gl)">${valEx} pts</b></div>`;
+  o += `<div style="font-size:14px; font-weight:800; color:var(--tx); margin-bottom:4px">🔥 ¡Llegan los mata-mata y tus predicciones valen más!</div>`;
+  o += `<div style="font-size:12px; color:var(--t2)">Acertar resultado: <b style="color:var(--gd)">${valRes} pts</b> · Goles equipo: <b style="color:var(--gd)">${valGol} pts</b><br>PLENO EXACTO: <b style="color:var(--gl)">${valEx} pts</b></div>`;
   o += `</div>`;
   
   // Round selector
