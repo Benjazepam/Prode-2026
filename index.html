@@ -388,9 +388,19 @@ async function setSpec(k,v){
   render();
 }
 async function setPt(k,v){S.config.points[k]=parseFloat(v)||0;await dbSet("prode-config",S.config);render();}
-async function setRes(k,si,v){if(!S.results.matches[k])S.results.matches[k]={h:"",a:""};S.results.matches[k][si]=v;await dbSet("prode-results",S.results);render();}
-async function setRSp(k,v){if(!S.results.specials)S.results.specials={};S.results.specials[k]=v;await dbSet("prode-results",S.results);render();}
+async function setRes(k,si,v){
+  const latest = await dbGet("prode-results"); if(latest) S.results = latest;
+  if(!S.results.matches) S.results.matches={};
+  if(!S.results.matches[k])S.results.matches[k]={h:"",a:""};
+  S.results.matches[k][si]=v;await dbSet("prode-results",S.results);render();
+}
+async function setRSp(k,v){
+  const latest = await dbGet("prode-results"); if(latest) S.results = latest;
+  if(!S.results.specials)S.results.specials={};
+  S.results.specials[k]=v;await dbSet("prode-results",S.results);render();
+}
 async function toggleRSp(k,v){
+  const latest = await dbGet("prode-results"); if(latest) S.results = latest;
   if(!S.results.specials)S.results.specials={};
   let cur = S.results.specials[k];
   if(!Array.isArray(cur)) cur = cur ? [cur] : [];
@@ -405,8 +415,18 @@ async function setKoScore(id,si,v){
   updateProgressSilent(); // Actualiza la barrita
   saveMyPlayer(); // Guarda de forma segura
 }
-async function setKoRes(id,si,v){if(!S.results.knockout)S.results.knockout={};if(!S.results.knockout[id])S.results.knockout[id]={h:"",a:""};S.results.knockout[id][si]=v;await dbSet("prode-results",S.results);render();}
-async function setKoPen(id,who){if(!S.results.knockout)S.results.knockout={};if(!S.results.knockout[id])S.results.knockout[id]={h:"",a:""};S.results.knockout[id].pen=who;await dbSet("prode-results",S.results);render();}
+async function setKoRes(id,si,v){
+  const latest = await dbGet("prode-results"); if(latest) S.results = latest;
+  if(!S.results.knockout)S.results.knockout={};
+  if(!S.results.knockout[id])S.results.knockout[id]={h:"",a:""};
+  S.results.knockout[id][si]=v;await dbSet("prode-results",S.results);render();
+}
+async function setKoPen(id,who){
+  const latest = await dbGet("prode-results"); if(latest) S.results = latest;
+  if(!S.results.knockout)S.results.knockout={};
+  if(!S.results.knockout[id])S.results.knockout[id]={h:"",a:""};
+  S.results.knockout[id].pen=who;await dbSet("prode-results",S.results);render();
+}
 async function delPlayer(n){delete S.players[n];await dbSet("prode-players",S.players);toast("Borrado: "+n);}
 // Group handlers
 async function createGroup(){
