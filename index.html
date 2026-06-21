@@ -755,15 +755,22 @@ o+=`<div style="font-size:12px;padding:6px 0;border-bottom:1px solid rgba(37,37,
   });
   o+=`</div>`; // Cierra el panel de Especiales
   
-  // ═══ HISTORIAL DE PARTIDOS ═══
+// ═══ HISTORIAL DE PARTIDOS ═══
   let hist = [];
   const basePts = S.config.points;
   
   // 1. Recorrer Grupos
   Object.entries(S.results.matches||{}).forEach(([k,re])=>{
     if(re.h!=="" && re.a!==""){
-      const m = GM[k];
+      // k es por ejemplo "A-1". Extraemos el grupo (A) y la posición (1)
+      const parts = k.split('-');
+      const grp = parts[0];
+      const idx = parseInt(parts[1]) - 1;
+      
+      // Ahora sí buscamos en la cajita correcta del Grupo
+      const m = (GM[grp] && GM[grp][idx]) ? GM[grp][idx] : null;
       if(!m) return;
+      
       const pr = vp.matches?.[k] || {h:"",a:""};
       let pt = 0, isPleno = false;
       if(pr.h!==""&&pr.a!==""){
