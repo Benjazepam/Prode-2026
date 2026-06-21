@@ -99,7 +99,15 @@ function parseESPN(events) {
       // Check if it's a knockout match (no group info)
       const isKO = !comp.groups && !ev.season?.slug?.includes("group");
 
-      results.push({ team1: t1, team2: t2, score1: s1, score2: s2, status: "FINISHED", isKO });
+      // Leer resultado de penales (shootoutScore) desde ESPN
+      let penWinner = null;
+      const p1 = parseInt(home.shootoutScore);
+      const p2 = parseInt(away.shootoutScore);
+      if (!isNaN(p1) && !isNaN(p2) && p1 !== p2) {
+        penWinner = p1 > p2 ? "h" : "a";
+      }
+
+      results.push({ team1: t1, team2: t2, score1: s1, score2: s2, status: "FINISHED", isKO, pen: penWinner });
     } catch (e) {
       console.error("[ESPN] Error parsing event:", e.message);
     }
@@ -137,19 +145,19 @@ function mapKOToKeys(parsedMatches, allKoMatches, koTeamsFn) {
   const results = {};
   parsedMatches.forEach(m => {
     if (m.score1 === null || !m.isKO) return;
-    // Try to match by team names
     allKoMatches.forEach(km => {
       const home = koTeamsFn(km.id)?.home;
       const away = koTeamsFn(km.id)?.away;
       if (!home || !away) return;
-      if (
-        (home === m.team1 && away === m.team2) ||
-        (home === m.team2 && away === m.team1)
-      ) {
-        if (home === m.team1) {
-          results[km.id] = { h: String(m.score1), a: String(m.score2) };
-        } else {
-          results[km.id] = { h: String(m.score2), a: String(m.score1) };
+      if ((home === m.team1 && away === m.team2) || (home === m.team2 && away === m.team1)) {
+        const isDirect = home === m.team1;
+        results[km.id] = { 
+          h: String(isDirect ? m.score1 : m.score2), 
+          a: String(isDirect ? m.score2 : m.score1) 
+        };
+        // Asignar ganador de penales si lo hubo
+        if (m.pen) {
+          results[km.id].pen = isDirect ? m.pen : (m.pen === "h" ? "a" : "h");
         }
       }
     });
@@ -232,24 +240,34 @@ async function autoFetchResults(GM, S, dbSet, onUpdate) {
         if (!S.results.knockout[key]) S.results.knockout[key] = {h:"", a:""};
         S.results.knockout[key].h = score.h;
         S.results.knockout[key].a = score.a;
+        if(score.pen) S.results.knockout[key].pen = score.pen;
         changed = true;
-      } else if (current.h !== score.h || current.a !== score.a) {
+      } else if (current.h !== score.h || current.a !== score.a || current.pen !== score.pen) {
         S.results.knockout[key].h = score.h;
         S.results.knockout[key].a = score.a;
+        if(score.pen) S.results.knockout[key].pen = score.pen;
         changed = true;
       }
     });
   }
 
   if (changed) {
+    // ESCUDO ANTIBORRADO: Descarga la base fresca antes de inyectar partidos
+    if (typeof dbGet === "function") {
+      const latest = await dbGet("prode-results");
+      if (latest) {
+        latest.matches = S.results.matches;
+        if (S.results.knockout) latest.knockout = S.results.knockout;
+        S.results = latest; // Mantiene goleadores y especiales intactos
+      }
+    }
     await dbSet("prode-results", S.results);
     console.log(`[API] Updated results`);
     if (onUpdate) onUpdate();
   } else {
     console.log("[API] No result changes");
   }
-}
-// ═══ TEST MODE: LOAD QATAR 2022 RESULTS ═══
+}// ═══ TEST MODE: LOAD QATAR 2022 RESULTS ═══
 const NAME_MAP_2022 = {
   "Qatar":"Qatar","Ecuador":"Ecuador","Senegal":"Senegal",
   "Netherlands":"Países Bajos","England":"Inglaterra","Iran":"Irán",
