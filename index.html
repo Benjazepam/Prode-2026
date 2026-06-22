@@ -762,22 +762,17 @@ o+=`<div style="font-size:12px;padding:6px 0;border-bottom:1px solid rgba(37,37,
   // 1. Recorrer Grupos
   Object.entries(S.results.matches||{}).forEach(([k,re])=>{
     if(re.h!=="" && re.a!==""){
-      // Buscador todoterreno de partidos en el fixture (GM)
-      let m = null;
-      if (Array.isArray(GM)) {
-        m = GM.find(x => x.id === k);
-      } else if (GM && typeof GM === 'object') {
-        const parts = k.split('-');
-        const grp = parts[0];
-        const idx = parseInt(parts[1]) - 1;
-        if (GM[grp] && GM[grp][idx]) m = GM[grp][idx];
-      }
+      // k viene como "A-0", "A-1", etc.
+      const parts = k.split('-');
+      const grp = parts[0]; 
+      const idx = parseInt(parts[1]); // SIN el "-1" que rompía la lectura
       
+      const m = (GM[grp] && GM[grp][idx]) ? GM[grp][idx] : null;
       if(!m) return;
       
-      // Extractor todoterreno de nombres de equipos (.home/.away o .h/.a)
-      const tHome = m.home || m.h || m.team1 || m.t1 || "Local";
-      const tAway = m.away || m.a || m.team2 || m.t2 || "Visitante";
+      // En tu código, los partidos son arrays simples: ["México", "Sudáfrica"]
+      const tHome = m[0];
+      const tAway = m[1];
       
       const pr = vp.matches?.[k] || {h:"",a:""};
       let pt = 0, isPleno = false;
@@ -794,7 +789,7 @@ o+=`<div style="font-size:12px;padding:6px 0;border-bottom:1px solid rgba(37,37,
     }
   });
 
-  // 2. Recorrer Eliminatorias (si ya arrancaron)
+  // 2. Recorrer Eliminatorias
   if(S.results.knockout && typeof computeGroupStandings === "function") {
      const koPts = { ...basePts, resultado: basePts.ko_resultado!==undefined?basePts.ko_resultado:(basePts.resultado||0), goles_equipo: basePts.ko_goles_equipo!==undefined?basePts.ko_goles_equipo:(basePts.goles_equipo||0), exacto: basePts.ko_exacto!==undefined?basePts.ko_exacto:(basePts.exacto||0) };
      const st = computeGroupStandings(GM, S.results.matches);
@@ -824,7 +819,7 @@ o+=`<div style="font-size:12px;padding:6px 0;border-bottom:1px solid rgba(37,37,
 
   // 3. Dibujar el historial
   if(hist.length > 0) {
-    hist.sort((a,b) => b.pt - a.pt); // Ordenar de mayor a menor puntaje
+    hist.sort((a,b) => b.pt - a.pt);
     o += `<div class="cd"><div style="font-size:14px;font-weight:800;margin-bottom:8px">📅 Historial de Partidos</div>`;
     hist.forEach(h => {
        o += `<div style="font-size:12px;padding:8px 0;border-bottom:1px solid rgba(37,37,80,.1);display:flex;justify-content:space-between;align-items:center">`;
