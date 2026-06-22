@@ -762,14 +762,22 @@ o+=`<div style="font-size:12px;padding:6px 0;border-bottom:1px solid rgba(37,37,
   // 1. Recorrer Grupos
   Object.entries(S.results.matches||{}).forEach(([k,re])=>{
     if(re.h!=="" && re.a!==""){
-      // k es por ejemplo "A-1". Extraemos el grupo (A) y la posición (1)
-      const parts = k.split('-');
-      const grp = parts[0];
-      const idx = parseInt(parts[1]) - 1;
+      // Buscador todoterreno de partidos en el fixture (GM)
+      let m = null;
+      if (Array.isArray(GM)) {
+        m = GM.find(x => x.id === k);
+      } else if (GM && typeof GM === 'object') {
+        const parts = k.split('-');
+        const grp = parts[0];
+        const idx = parseInt(parts[1]) - 1;
+        if (GM[grp] && GM[grp][idx]) m = GM[grp][idx];
+      }
       
-      // Ahora sí buscamos en la cajita correcta del Grupo
-      const m = (GM[grp] && GM[grp][idx]) ? GM[grp][idx] : null;
       if(!m) return;
+      
+      // Extractor todoterreno de nombres de equipos (.home/.away o .h/.a)
+      const tHome = m.home || m.h || m.team1 || m.t1 || "Local";
+      const tAway = m.away || m.a || m.team2 || m.t2 || "Visitante";
       
       const pr = vp.matches?.[k] || {h:"",a:""};
       let pt = 0, isPleno = false;
@@ -782,7 +790,7 @@ o+=`<div style="font-size:12px;padding:6px 0;border-bottom:1px solid rgba(37,37,
           if(pa===ra) pt += basePts.goles_equipo;
         }
       }
-      hist.push({ mLabel: `${flag(m.h)} ${m.h} vs ${m.a} ${flag(m.a)}`, pr, re, pt: Number(pt.toFixed(2)), isPleno });
+      hist.push({ mLabel: `${flag(tHome)} ${tHome} vs ${tAway} ${flag(tAway)}`, pr, re, pt: Number(pt.toFixed(2)), isPleno });
     }
   });
 
