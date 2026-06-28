@@ -394,9 +394,34 @@ function renderKoPlay(S, pd, flag, isKoLocked, setKoScore) {
           const penWinner = real.pen === "h" ? t.home : t.away;
           penText = ` (pen: ${penWinner})`;
         }
-        o += `<div style="font-size:11px;text-align:center;color:var(--gd);font-weight:700;margin-top:2px">Resultado: ${real.h} - ${real.a}${penText}</div>`;
-      }
-      
+        o += `<div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;margin-top:4px">`;
+        o += `<span style="color:var(--t3);font-size:10px">Real:</span>`;
+        o += `<span style="font-weight:800;color:var(--gd)">${real.h} - ${real.a}${penText}</span>`;
+        
+        if (pr.h !== "" && pr.a !== "") {
+           let pts_earned = 0;
+           let feedback = "";
+           const pH = +pr.h, pA = +pr.a, rH = +real.h, rA = +real.a;
+           
+           if (pH === rH && pA === rA) {
+               pts_earned = (pts.exacto || 0) + (pts.resultado || 0) + (pts.goles_equipo || 0) * 2;
+               feedback = "🎯";
+           } else {
+               const resOk = Math.sign(pH - pA) === Math.sign(rH - rA);
+               const g1Ok = pH === rH, g2Ok = pA === rA;
+               if (resOk) { pts_earned += pts.resultado || 0; feedback = "✅"; } else { feedback = "❌"; }
+               if (g1Ok) pts_earned += pts.goles_equipo || 0;
+               if (g2Ok) pts_earned += pts.goles_equipo || 0;
+           }
+           
+           o += `<span style="font-size:14px;margin-left:4px">${feedback}</span>`;
+           if (pts_earned > 0) o += `<span style="color:var(--gl);font-weight:700;font-size:11px">+${pts_earned} pts</span>`;
+           else if (feedback === "❌") o += `<span style="color:var(--rd);font-size:11px">0 pts</span>`;
+        } else {
+           o += `<span style="color:var(--t3);font-size:11px;margin-left:4px">sin predicción</span>`;
+        }
+        o += `</div>`;
+      }      
       // Peek at others if locked
       if (lk) {
         const ot = Object.entries(S.players).filter(([n]) => n !== S.user.name).map(([n,d]) => {
