@@ -257,7 +257,15 @@ function resolveTeam(src, standings, bestThirds, realKnockout, thirdAssignments,
 // ═══ GET ALL KO MATCH TEAMS (resolved) ═══
 function getKoTeams(standings, bestThirds, realKnockout) {
   const teams = {};
-  const thirdAssignments = assignBestThirds(standings, bestThirds);
+  // Cambiamos const por let para poder modificar la lista
+  let thirdAssignments = assignBestThirds(standings, bestThirds);
+  
+  // CORRECCIÓN MANUAL DE LA TABLA FIFA
+  if (thirdAssignments) {
+      thirdAssignments["R32-12-1"] = "Argelia"; // Rival de Suiza (1B)
+      thirdAssignments["R32-8-1"] = "Senegal";  // Rival de Bélgica (1G)
+  }
+
   ALL_KO_MATCHES.forEach(m => {
     teams[m.id] = {
       home: resolveTeam(m.src[0], standings, bestThirds, realKnockout, thirdAssignments, m.id, 0),
