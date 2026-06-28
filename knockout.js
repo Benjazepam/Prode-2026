@@ -25,7 +25,7 @@
 // Format: each entry = [sourceA, sourceB] where source is "1A" (1st of group A), "2B", "3ABCDEF" (best 3rd from those groups)
 const R32_BRACKET = [
   // Match 0-15: Round of 32
-  {id:"R32-0", src:["2A","2B"],   ko:"2026-06-28T19:20Z", label:"R32 #1"},
+  {id:"R32-0", src:["2A","2B"],   ko:"2026-06-28T19:00Z", label:"R32 #1"},
   {id:"R32-1", src:["1C","2F"],   ko:"2026-06-29T17:00Z", label:"R32 #2"},
   {id:"R32-2", src:["1E","3ABCDF"],ko:"2026-06-29T20:30Z",label:"R32 #3"},
   {id:"R32-3", src:["1F","2C"],   ko:"2026-06-30T01:00Z", label:"R32 #4"},
